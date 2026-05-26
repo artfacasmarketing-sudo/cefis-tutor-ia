@@ -16,7 +16,7 @@ async function generateScript(
       { role: 'system', content: buildPodcastSystemPrompt(ctx.studentName.split(' ')[0]) },
       { role: 'user', content: buildPodcastUserPrompt(ctx) },
     ],
-    max_tokens: 1800,
+    max_tokens: 600,
     temperature: 0.75,
   })
   return completion.choices[0]?.message?.content ?? ''
@@ -104,9 +104,9 @@ export async function POST() {
     try {
       // Fetch RAG chunks for all gap topics in parallel
       const chunkSets = await Promise.all(
-        gaps.map(gap => matchTranscripts(gap, { threshold: 0.68, count: 3 })),
+        gaps.map(gap => matchTranscripts(gap, { threshold: 0.68, count: 2 })),
       )
-      const chunks = chunkSets.flat()
+      const chunks = chunkSets.flat().slice(0, 5)
 
       // Generate podcast script with GPT-4o
       const script = await generateScript(openai, {
