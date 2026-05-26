@@ -8,6 +8,8 @@ import { isTextUIPart } from 'ai'
 import { BookOpen } from 'lucide-react'
 import { FlashModeCard } from './FlashModeCard'
 import { PodcastInlineCard } from './PodcastInlineCard'
+import { SourcesChips } from './SourcesChips'
+import type { SourceChunk } from './SourcePreviewModal'
 
 const T = (a: number) => `rgba(245,240,235,${a})`
 
@@ -172,6 +174,14 @@ export function ChatMessage({ message }: ChatMessageProps) {
             {text}
           </ReactMarkdown>
           <RagSourceFooter text={text} />
+          {/* SourcesChips: usa metadata.sources persistido no DB */}
+          {(() => {
+            const meta = message.metadata as { sources?: SourceChunk[] } | undefined
+            const sources = meta?.sources
+            return sources && sources.length > 0
+              ? <SourcesChips sources={sources} />
+              : null
+          })()}
         </div>
       )}
     </motion.div>

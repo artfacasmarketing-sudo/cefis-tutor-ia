@@ -33,18 +33,34 @@ export function TutorChat({ conversationId, initialMessages = [], onOpenSidebar 
   const bottomRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
+  // Bug #3 fix: useRef garante que o fetch sempre acessa o conversationId ATUAL,
+  // não o valor stale capturado no closure quando o transport foi construído.
+  const activeConvIdRef = useRef(activeConvId)
+  activeConvIdRef.current = activeConvId
+
   const { messages, sendMessage, status, setMessages } = useChat({
     transport: new DefaultChatTransport({
       api: '/api/chat',
-      body: { conversationId: activeConvId },
+      // Não passamos conversationId aqui — o fetch interceptor injeta o valor atual
       fetch: async (url, init) => {
-        const res = await fetch(url, init)
-        // Capture conversationId from response header
+        // Injetar conversationId atual no body (evita closure stale)
+        let body: Record<string, unknown> = {}
+        try {
+          body = JSON.parse(init?.body as string) as Record<string, unknown>
+        } catch { /* body vazio ou não-JSON */ }
+        body.conversationId = activeConvIdRef.current
+
+        const res = await fetch(url, {
+          ...init,
+          body: JSON.stringify(body),
+        })
+
+        // Capturar conversationId da response (criado pelo backend quando não existia)
         const newConvId = res.headers.get('x-conversation-id')
-        if (newConvId && newConvId !== activeConvId) {
+        if (newConvId && newConvId !== activeConvIdRef.current) {
+          activeConvIdRef.current = newConvId
           setActiveConvId(newConvId)
           window.history.replaceState(null, '', `/chat?c=${newConvId}`)
-          // Signal sidebar to refresh its conversation list
           window.dispatchEvent(new CustomEvent('cefis:conversation-updated'))
         }
         return res

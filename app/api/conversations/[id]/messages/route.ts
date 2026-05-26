@@ -7,26 +7,28 @@ interface DbMessage {
   role: string
   content: string
   parts: unknown[] | null
+  metadata: Record<string, unknown> | null
   created_at: string
 }
 
 function toUIMessage(row: DbMessage): UIMessage {
-  // If parts are stored (new format), use them directly
+  // Merge DB metadata (sources, rag_chunks) with created_at
+  const meta = { created_at: row.created_at, ...(row.metadata ?? {}) }
+
   if (Array.isArray(row.parts) && row.parts.length > 0) {
     return {
       id: row.id,
       role: row.role as 'user' | 'assistant',
       parts: row.parts as UIMessage['parts'],
-      metadata: { created_at: row.created_at },
+      metadata: meta,
     }
   }
 
-  // Legacy fallback: content-only → text part
   return {
     id: row.id,
     role: row.role as 'user' | 'assistant',
     parts: [{ type: 'text' as const, text: row.content }],
-    metadata: { created_at: row.created_at },
+    metadata: meta,
   }
 }
 
@@ -40,7 +42,6 @@ export async function GET(
 
   const supabase = createSupabaseAdmin()
 
-  // Verify ownership via conversation
   const { data: conv } = await supabase
     .from('conversations')
     .select('id')
@@ -52,7 +53,7 @@ export async function GET(
 
   const { data, error } = await supabase
     .from('tutor_messages')
-    .select('id, role, content, parts, created_at')
+    .select('id, role, content, parts, metadata, created_at')  // inclui metadata
     .eq('conversation_id', id)
     .in('role', ['user', 'assistant'])
     .order('created_at', { ascending: true })

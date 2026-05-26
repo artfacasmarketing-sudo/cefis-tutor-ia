@@ -176,7 +176,15 @@ export async function POST(request: Request) {
           content: text,
           parts: assistantParts.length > 0 ? assistantParts : [{ type: 'text', text }],
           metadata: {
-            sources: ragChunks.map(c => ({ course: c.courseTitle, lesson: c.lessonTitle })),
+            sources: ragChunks.map(c => ({
+              id: c.id,
+              lessonId: c.lessonId,
+              lessonTitle: c.lessonTitle,
+              courseId: c.courseId,
+              courseTitle: c.courseTitle,
+              contentSnippet: c.content.slice(0, 600),
+              similarity: c.similarity,
+            })),
           },
         }),
 

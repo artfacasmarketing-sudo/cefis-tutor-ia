@@ -54,7 +54,14 @@ function SidebarContent({ onClose }: SidebarContentProps) {
   const fetchConversations = useCallback(async () => {
     try {
       const res = await fetch('/api/conversations')
-      if (res.ok) setConversations(await res.json() as ConversationListItem[])
+      if (res.ok) {
+        setConversations(await res.json() as ConversationListItem[])
+      } else {
+        const body = await res.json().catch(() => ({})) as { error?: string }
+        console.error('[ConversationsSidebar] fetch failed:', res.status, body.error)
+      }
+    } catch (err) {
+      console.error('[ConversationsSidebar] network error:', err)
     } finally {
       setLoading(false)
     }
