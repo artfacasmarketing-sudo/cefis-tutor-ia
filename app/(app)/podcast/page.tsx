@@ -2,42 +2,23 @@ import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { Mic, Clock, CheckCircle, XCircle, Loader2 } from 'lucide-react'
 import { createSupabaseAdmin } from '@/lib/supabase/server'
-import { cn } from '@/lib/utils'
 
-export const metadata = {
-  title: 'Meus Podcasts — CEFIS Tutor',
-}
-
+export const metadata = { title: 'Meus Podcasts — CEFIS Tutor' }
 export const dynamic = 'force-dynamic'
 
+const T = (a: number) => `rgba(245,240,235,${a})`
+
 type AudioStatus = 'pending' | 'generating' | 'ready' | 'error'
+interface AudioRow { id: string; title: string; status: AudioStatus; topics: string[]; created_at: string }
 
-interface AudioRow {
-  id: string
-  title: string
-  status: AudioStatus
-  topics: string[]
-  created_at: string
-}
-
-function StatusIcon({ status }: { status: AudioStatus }) {
-  switch (status) {
-    case 'ready':
-      return <CheckCircle className="h-4 w-4 text-emerald-500" />
-    case 'error':
-      return <XCircle className="h-4 w-4 text-red-500" />
-    default:
-      return <Loader2 className="h-4 w-4 text-zinc-400 animate-spin" />
-  }
+function StatusDot({ status }: { status: AudioStatus }) {
+  if (status === 'ready') return <CheckCircle className="h-4 w-4" style={{ color: '#4ade80' }} />
+  if (status === 'error') return <XCircle className="h-4 w-4" style={{ color: '#e05555' }} />
+  return <Loader2 className="h-4 w-4 animate-spin" style={{ color: T(0.3) }} />
 }
 
 function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString('pt-BR', {
-    day: '2-digit',
-    month: 'short',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
+  return new Date(iso).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })
 }
 
 export default async function PodcastListPage() {
@@ -46,7 +27,6 @@ export default async function PodcastListPage() {
   if (!userId) redirect('/login')
 
   const supabase = createSupabaseAdmin()
-
   const { data: profile } = await supabase
     .from('student_profiles')
     .select('id, onboarding_completed')
@@ -65,92 +45,104 @@ export default async function PodcastListPage() {
   const list = (audios ?? []) as AudioRow[]
 
   return (
-    <div className="flex flex-col">
-      <main className="max-w-3xl w-full mx-auto px-4 sm:px-6 py-8">
-        {list.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-zinc-300 bg-white p-16 flex flex-col items-center text-center gap-4">
-            <div className="w-14 h-14 rounded-full bg-zinc-100 flex items-center justify-center">
-              <Mic className="h-7 w-7 text-zinc-400" />
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-zinc-700">Nenhum podcast ainda</p>
-              <p className="text-xs text-zinc-400 mt-1">
-                Gere seu primeiro episódio personalizado com base nas suas lacunas
-              </p>
-            </div>
+    <div className="max-w-3xl w-full mx-auto px-4 sm:px-6 py-8">
+      {list.length === 0 ? (
+        <div
+          className="rounded-2xl p-16 flex flex-col items-center text-center gap-5"
+          style={{ background: '#242424', border: '1px solid rgba(255,255,255,0.08)' }}
+        >
+          <div
+            className="w-14 h-14 rounded-2xl flex items-center justify-center"
+            style={{ background: 'rgba(224,107,73,0.1)', border: '1px solid rgba(224,107,73,0.15)' }}
+          >
+            <Mic className="h-6 w-6" style={{ color: '#e06b49' }} />
+          </div>
+          <div>
+            <p className="text-sm font-semibold" style={{ color: T(0.8) }}>Nenhum podcast ainda</p>
+            <p className="text-xs mt-1" style={{ color: T(0.4) }}>
+              Gere seu primeiro episódio personalizado com base nas suas lacunas
+            </p>
+          </div>
+          <a
+            href="/podcast/generate"
+            className="flex items-center gap-2 text-sm font-semibold rounded-2xl px-5 py-2.5 transition-all cursor-pointer"
+            style={{
+              background: '#e06b49',
+              color: '#f5f0eb',
+              boxShadow: '0 0 16px rgba(224,107,73,0.25)',
+            }}
+          >
+            <Mic className="h-4 w-4" />
+            Gerar primeiro podcast
+          </a>
+        </div>
+      ) : (
+        <div className="space-y-2.5">
+          {list.map(audio => (
             <a
-              href="/podcast/generate"
-              className="flex items-center gap-2 text-sm font-medium text-white bg-zinc-900 hover:bg-zinc-700 rounded-xl px-5 py-2.5 transition-colors"
+              key={audio.id}
+              href={`/podcast/${audio.id}`}
+              className="flex items-start gap-4 rounded-2xl p-4 transition-all duration-200"
+              style={{
+                background: '#242424',
+                border: '1px solid rgba(255,255,255,0.08)',
+                boxShadow: '0 4px 24px rgba(0,0,0,0.4)',
+                cursor: audio.status === 'ready' ? 'pointer' : 'default',
+                opacity: audio.status === 'error' ? 0.6 : 1,
+              }}
             >
-              <Mic className="h-4 w-4" />
-              Gerar primeiro podcast
-            </a>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {list.map(audio => (
-              <a
-                key={audio.id}
-                href={`/podcast/${audio.id}`}
-                className={cn(
-                  'flex items-start gap-4 bg-white rounded-xl border p-4 transition-all',
-                  audio.status === 'ready'
-                    ? 'border-zinc-200 hover:border-zinc-300 hover:shadow-sm cursor-pointer'
-                    : 'border-zinc-100 cursor-default',
-                )}
+              {/* Icon */}
+              <div
+                className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+                style={{
+                  background: audio.status === 'ready' ? 'rgba(224,107,73,0.12)' : 'rgba(255,255,255,0.05)',
+                  border: audio.status === 'ready' ? '1px solid rgba(224,107,73,0.2)' : '1px solid rgba(255,255,255,0.06)',
+                }}
               >
-                {/* Icon */}
-                <div
-                  className={cn(
-                    'w-10 h-10 rounded-full flex items-center justify-center shrink-0',
-                    audio.status === 'ready' ? 'bg-zinc-900' : 'bg-zinc-100',
-                  )}
-                >
-                  {audio.status === 'ready' ? (
-                    <Mic className="h-4.5 w-4.5 text-white" />
-                  ) : (
-                    <StatusIcon status={audio.status} />
-                  )}
+                {audio.status === 'ready'
+                  ? <Mic className="h-4 w-4" style={{ color: '#e06b49' }} />
+                  : <StatusDot status={audio.status} />
+                }
+              </div>
+
+              {/* Info */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-start justify-between gap-2">
+                  <p className="text-sm font-medium leading-snug" style={{ color: T(0.85) }}>
+                    {audio.title}
+                  </p>
+                  <StatusDot status={audio.status} />
                 </div>
 
-                {/* Info */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-start justify-between gap-2">
-                    <p className="text-sm font-semibold text-zinc-900 leading-snug">
-                      {audio.title}
-                    </p>
-                    <StatusIcon status={audio.status} />
+                {(audio.topics as string[]).length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 mt-1.5">
+                    {(audio.topics as string[]).map(t => (
+                      <span
+                        key={t}
+                        className="text-[10px] rounded-full px-2 py-0.5"
+                        style={{ background: 'rgba(255,255,255,0.05)', color: T(0.4) }}
+                      >
+                        {t}
+                      </span>
+                    ))}
                   </div>
+                )}
 
-                  {(audio.topics as string[]).length > 0 && (
-                    <div className="flex flex-wrap gap-1.5 mt-1.5">
-                      {(audio.topics as string[]).map(t => (
-                        <span
-                          key={t}
-                          className="text-[10px] bg-zinc-100 text-zinc-500 rounded-full px-2 py-0.5"
-                        >
-                          {t}
-                        </span>
-                      ))}
-                    </div>
+                <div className="flex items-center gap-1.5 mt-2 text-[11px]" style={{ color: T(0.3) }}>
+                  <Clock className="h-3 w-3" />
+                  {formatDate(audio.created_at)}
+                  {audio.status === 'generating' && (
+                    <span style={{ color: '#fbbf24' }} className="font-medium">· Gerando...</span>
                   )}
-
-                  <div className="flex items-center gap-1.5 mt-2 text-[11px] text-zinc-400">
-                    <Clock className="h-3 w-3" />
-                    {formatDate(audio.created_at)}
-                    {audio.status === 'generating' && (
-                      <span className="text-amber-500 font-medium">· Gerando...</span>
-                    )}
-                    {audio.status === 'error' && (
-                      <span className="text-red-500 font-medium">· Falha</span>
-                    )}
-                  </div>
+                  {audio.status === 'error' && (
+                    <span style={{ color: '#e05555' }} className="font-medium">· Falha</span>
+                  )}
                 </div>
-              </a>
-            ))}
-          </div>
-        )}
-      </main>
+              </div>
+            </a>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

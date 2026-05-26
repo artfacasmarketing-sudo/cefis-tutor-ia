@@ -6,6 +6,8 @@ import { motion } from 'framer-motion'
 import { toast } from 'sonner'
 import { Loader2, ArrowRight } from 'lucide-react'
 
+const T = 'rgba(245,240,235,'
+
 export function LoginForm() {
   const router = useRouter()
   const [email, setEmail] = useState('')
@@ -32,19 +34,36 @@ export function LoginForm() {
     }
   }
 
-  const inputClass =
-    'w-full rounded-xl bg-white/5 border border-white/10 px-4 py-2.5 text-sm text-white placeholder:text-white/30 outline-none transition-all duration-200 focus:border-indigo-500/60 focus:bg-white/8 focus:ring-2 focus:ring-indigo-500/20'
+  const inputStyle: React.CSSProperties = {
+    width: '100%',
+    background: '#2a2a2a',
+    border: '1px solid rgba(255,255,255,0.09)',
+    borderRadius: '12px',
+    padding: '10px 16px',
+    fontSize: '14px',
+    color: '#f5f0eb',
+    outline: 'none',
+    transition: 'border-color 0.15s',
+    fontFamily: 'inherit',
+  }
+
+  function handleFocus(e: React.FocusEvent<HTMLInputElement>) {
+    e.currentTarget.style.borderColor = 'rgba(224,107,73,0.4)'
+  }
+  function handleBlur(e: React.FocusEvent<HTMLInputElement>) {
+    e.currentTarget.style.borderColor = 'rgba(255,255,255,0.09)'
+  }
 
   return (
     <motion.form
       onSubmit={handleSubmit}
-      initial={{ opacity: 0, y: 12 }}
+      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
       className="space-y-3"
     >
       <div className="space-y-1.5">
-        <label className="block text-[11px] font-medium uppercase tracking-wider text-white/40">
+        <label className="block text-[11px] font-medium uppercase tracking-[0.12em]" style={{ color: `${T}0.4)` }}>
           Email
         </label>
         <input
@@ -55,11 +74,13 @@ export function LoginForm() {
           required
           autoComplete="email"
           disabled={loading}
-          className={inputClass}
+          style={inputStyle}
+          onFocus={handleFocus}
+          onBlur={handleBlur}
         />
       </div>
       <div className="space-y-1.5">
-        <label className="block text-[11px] font-medium uppercase tracking-wider text-white/40">
+        <label className="block text-[11px] font-medium uppercase tracking-[0.12em]" style={{ color: `${T}0.4)` }}>
           Senha
         </label>
         <input
@@ -70,7 +91,9 @@ export function LoginForm() {
           required
           autoComplete="current-password"
           disabled={loading}
-          className={inputClass}
+          style={inputStyle}
+          onFocus={handleFocus}
+          onBlur={handleBlur}
         />
       </div>
 
@@ -79,8 +102,12 @@ export function LoginForm() {
         disabled={loading}
         whileHover={{ scale: 1.01 }}
         whileTap={{ scale: 0.99 }}
-        className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white transition-all duration-200 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-        style={{ boxShadow: '0 0 20px rgba(99,102,241,0.35)' }}
+        className="mt-2 flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+        style={{
+          background: '#e06b49',
+          color: '#f5f0eb',
+          boxShadow: '0 0 20px rgba(224,107,73,0.3)',
+        }}
       >
         {loading ? (
           <Loader2 className="h-4 w-4 animate-spin" />

@@ -15,7 +15,10 @@ export function LogoutButton() {
   return (
     <button
       onClick={handleLogout}
-      className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs text-white/35 hover:text-white/70 hover:bg-white/5 transition-all duration-150 cursor-pointer"
+      className="flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-xs transition-all duration-150 cursor-pointer"
+      style={{ color: 'rgba(245,240,235,0.3)' }}
+      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = 'rgba(245,240,235,0.65)'; (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.05)' }}
+      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = 'rgba(245,240,235,0.3)'; (e.currentTarget as HTMLElement).style.background = 'transparent' }}
       aria-label="Sair da conta"
     >
       <LogOut className="h-3.5 w-3.5" />

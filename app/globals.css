@@ -36,7 +36,7 @@
   --color-primary-foreground: var(--primary-foreground);
   --color-primary: var(--primary);
   --color-popover-foreground: var(--popover-foreground);
-  --color-popover: var(--card);
+  --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
   --radius-sm: calc(var(--radius) * 0.6);
@@ -48,85 +48,87 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-/* Dark is the ONLY theme — values live in :root directly */
+/* ── Warm charcoal palette (Claude.ai aesthetic) ─────────────────────────── */
 :root {
-  --background: hsl(220, 47%, 3%);
-  --foreground: hsl(210, 40%, 98%);
-  --card: hsl(220, 47%, 5%);
-  --card-foreground: hsl(210, 40%, 98%);
-  --popover: hsl(220, 47%, 5%);
-  --popover-foreground: hsl(210, 40%, 98%);
-  --primary: hsl(263, 70%, 58%);
-  --primary-foreground: hsl(210, 40%, 98%);
-  --secondary: hsl(220, 47%, 8%);
-  --secondary-foreground: hsl(210, 40%, 98%);
-  --muted: hsl(220, 47%, 8%);
-  --muted-foreground: hsl(215, 20%, 65%);
-  --accent: hsl(263, 70%, 58%);
-  --accent-foreground: hsl(210, 40%, 98%);
-  --destructive: hsl(0, 72%, 51%);
-  --border: hsl(220, 47%, 12%);
-  --input: hsl(220, 47%, 12%);
-  --ring: hsl(263, 70%, 58%);
-  --radius: 0.75rem;
-  --chart-1: hsl(263, 70%, 68%);
-  --chart-2: hsl(215, 70%, 60%);
-  --chart-3: hsl(160, 60%, 45%);
-  --chart-4: hsl(38, 92%, 50%);
-  --chart-5: hsl(0, 72%, 51%);
-  --sidebar: hsl(220, 47%, 5%);
-  --sidebar-foreground: hsl(210, 40%, 98%);
-  --sidebar-primary: hsl(263, 70%, 58%);
-  --sidebar-primary-foreground: hsl(210, 40%, 98%);
-  --sidebar-accent: hsl(220, 47%, 8%);
-  --sidebar-accent-foreground: hsl(210, 40%, 98%);
-  --sidebar-border: hsl(220, 47%, 12%);
-  --sidebar-ring: hsl(263, 70%, 58%);
+  /* Surfaces */
+  --background:          #1a1a1a;
+  --foreground:          #f5f0eb;
+  --card:                #242424;
+  --card-foreground:     #f5f0eb;
+  --popover:             #2a2a2a;
+  --popover-foreground:  #f5f0eb;
+  /* Brand */
+  --primary:             #e06b49;
+  --primary-foreground:  #f5f0eb;
+  /* Neutrals */
+  --secondary:           #2a2a2a;
+  --secondary-foreground:#f5f0eb;
+  --muted:               #2a2a2a;
+  --muted-foreground:    rgba(245, 240, 235, 0.5);
+  --accent:              #e06b49;
+  --accent-foreground:   #f5f0eb;
+  /* Semantic */
+  --destructive:         #e05555;
+  --border:              rgba(255, 255, 255, 0.08);
+  --input:               rgba(255, 255, 255, 0.06);
+  --ring:                #e06b49;
+  --radius:              0.75rem;
+  /* Charts */
+  --chart-1: #e06b49;
+  --chart-2: #4ade80;
+  --chart-3: #fbbf24;
+  --chart-4: #818cf8;
+  --chart-5: #f472b6;
+  /* Sidebar */
+  --sidebar:             #1a1a1a;
+  --sidebar-foreground:  #f5f0eb;
+  --sidebar-primary:     #e06b49;
+  --sidebar-primary-foreground: #f5f0eb;
+  --sidebar-accent:      #2a2a2a;
+  --sidebar-accent-foreground:  #f5f0eb;
+  --sidebar-border:      rgba(255, 255, 255, 0.08);
+  --sidebar-ring:        #e06b49;
+
   color-scheme: dark;
 }
 
 @layer base {
-  * {
-    @apply border-border outline-ring/50;
-  }
+  * { @apply border-border outline-ring/50; }
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "cv11", "ss01";
     -webkit-font-smoothing: antialiased;
   }
-  html {
-    @apply font-sans;
-    color-scheme: dark;
-  }
+  html { @apply font-sans; color-scheme: dark; }
 }
 
+/* ── Reusable utilities ───────────────────────────────────────────────────── */
 @layer utilities {
   .glass {
-    background: rgba(255, 255, 255, 0.04);
-    backdrop-filter: blur(20px) saturate(180%);
+    background: #242424;
     border: 1px solid rgba(255, 255, 255, 0.08);
   }
-  .glass-strong {
-    background: rgba(255, 255, 255, 0.07);
-    backdrop-filter: blur(40px) saturate(200%);
-    border: 1px solid rgba(255, 255, 255, 0.12);
+  .glass-elevated {
+    background: #2a2a2a;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
   }
-  .glow-indigo {
-    box-shadow: 0 0 40px rgba(99, 102, 241, 0.2), 0 0 80px rgba(99, 102, 241, 0.08);
+  .glow-coral {
+    box-shadow: 0 0 20px rgba(224, 107, 73, 0.2), 0 0 60px rgba(224, 107, 73, 0.06);
   }
-  .glow-indigo-sm {
-    box-shadow: 0 0 20px rgba(99, 102, 241, 0.15);
+  .glow-coral-sm {
+    box-shadow: 0 0 12px rgba(224, 107, 73, 0.18);
   }
   .text-gradient {
-    background: linear-gradient(135deg, #fff 0%, rgba(255,255,255,0.7) 100%);
+    background: linear-gradient(135deg, #f5f0eb 0%, rgba(245,240,235,0.7) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
-  .text-gradient-indigo {
-    background: linear-gradient(135deg, #818cf8 0%, #6366f1 50%, #a78bfa 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+  .text-coral {
+    color: #e06b49;
+  }
+  .bg-coral {
+    background-color: #e06b49;
   }
 }

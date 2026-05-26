@@ -6,6 +6,8 @@ import { GraduationCap, LayoutDashboard, MessageSquare, Mic } from 'lucide-react
 import { cn } from '@/lib/utils'
 import { LogoutButton } from './LogoutButton'
 
+const T = 'rgba(245,240,235,'
+
 const NAV = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, exact: true },
   { href: '/chat', label: 'Chat', icon: MessageSquare, exact: false },
@@ -14,28 +16,31 @@ const NAV = [
 
 export function AppNav() {
   const pathname = usePathname()
-
-  function isActive(href: string, exact: boolean) {
-    return exact ? pathname === href : pathname.startsWith(href)
-  }
+  const isActive = (href: string, exact: boolean) => exact ? pathname === href : pathname.startsWith(href)
 
   return (
     <nav
-      className="sticky top-0 z-50 flex h-14 items-center justify-between border-b border-white/[0.06] px-4 sm:px-6"
-      style={{ background: 'rgba(2, 6, 23, 0.85)', backdropFilter: 'blur(20px) saturate(180%)' }}
+      className="sticky top-0 z-50 flex h-14 items-center justify-between px-4 sm:px-6"
+      style={{
+        background: 'rgba(26,26,26,0.92)',
+        backdropFilter: 'blur(16px) saturate(150%)',
+        borderBottom: '1px solid rgba(255,255,255,0.07)',
+      }}
     >
-      {/* Brand */}
-      <div className="flex items-center gap-5">
-        <Link href="/dashboard" className="flex items-center gap-2 group">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-500/15 ring-1 ring-indigo-500/30 transition-all group-hover:ring-indigo-400/50">
-            <GraduationCap className="h-3.5 w-3.5 text-indigo-400" />
+      {/* Brand + links */}
+      <div className="flex items-center gap-4">
+        <Link href="/dashboard" className="flex items-center gap-2 group shrink-0">
+          <div
+            className="flex h-7 w-7 items-center justify-center rounded-lg transition-all"
+            style={{ background: 'rgba(224,107,73,0.12)', border: '1px solid rgba(224,107,73,0.2)' }}
+          >
+            <GraduationCap className="h-3.5 w-3.5" style={{ color: '#e06b49' }} />
           </div>
-          <span className="text-sm font-semibold text-gradient hidden sm:block">
+          <span className="text-sm font-semibold hidden sm:block" style={{ color: '#f5f0eb' }}>
             CEFIS Tutor
           </span>
         </Link>
 
-        {/* Nav links */}
         <div className="flex items-center gap-0.5">
           {NAV.map(({ href, label, icon: Icon, exact }) => {
             const active = isActive(href, exact)
@@ -44,13 +49,21 @@ export function AppNav() {
                 key={href}
                 href={href}
                 className={cn(
-                  'flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm transition-all duration-150 cursor-pointer',
-                  active
-                    ? 'bg-white/10 text-white font-medium'
-                    : 'text-white/50 hover:text-white/80 hover:bg-white/5',
+                  'flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-sm transition-all duration-150 cursor-pointer',
                 )}
+                style={{
+                  background: active ? 'rgba(224,107,73,0.1)' : 'transparent',
+                  color: active ? '#e06b49' : `${T}0.45)`,
+                  fontWeight: active ? 500 : 400,
+                }}
+                onMouseEnter={e => {
+                  if (!active) (e.currentTarget as HTMLElement).style.color = `${T}0.75)`
+                }}
+                onMouseLeave={e => {
+                  if (!active) (e.currentTarget as HTMLElement).style.color = `${T}0.45)`
+                }}
               >
-                <Icon className={cn('h-3.5 w-3.5 shrink-0', active ? 'text-indigo-400' : '')} />
+                <Icon className="h-3.5 w-3.5 shrink-0" />
                 <span className="hidden sm:inline">{label}</span>
               </Link>
             )
@@ -62,13 +75,13 @@ export function AppNav() {
       <div className="flex items-center gap-2">
         <Link
           href="/podcast/generate"
-          className={cn(
-            'hidden md:flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all duration-150 cursor-pointer',
-            pathname === '/podcast/generate'
-              ? 'bg-indigo-500/20 text-indigo-300 ring-1 ring-indigo-500/30'
-              : 'bg-indigo-600 text-white hover:bg-indigo-500',
-          )}
-          style={pathname !== '/podcast/generate' ? { boxShadow: '0 0 12px rgba(99,102,241,0.3)' } : {}}
+          className="hidden md:flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold transition-all duration-150 cursor-pointer"
+          style={{
+            background: pathname === '/podcast/generate' ? 'rgba(224,107,73,0.12)' : '#e06b49',
+            color: pathname === '/podcast/generate' ? '#e06b49' : '#f5f0eb',
+            border: pathname === '/podcast/generate' ? '1px solid rgba(224,107,73,0.2)' : 'none',
+            boxShadow: pathname !== '/podcast/generate' ? '0 0 12px rgba(224,107,73,0.25)' : 'none',
+          }}
         >
           <Mic className="h-3.5 w-3.5" />
           Gerar Podcast

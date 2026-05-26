@@ -6,38 +6,47 @@ import type { DomainMap } from '@/types/domain'
 
 interface DomainMapProps { domainMap: DomainMap }
 
-function getColors(accuracy: number, count: number) {
+interface Colors {
+  border: string
+  bg: string
+  bar: string
+  badge: string
+  badgeBg: string
+  value: string
+}
+
+function getColors(accuracy: number, count: number): Colors {
   if (count === 0) return {
-    border: 'border-white/[0.07]',
-    bg: 'bg-white/[0.03]',
-    bar: 'bg-white/20',
-    badge: 'text-white/30 bg-white/5',
-    label: 'text-white/30',
-    value: 'text-white/25',
+    border: 'rgba(255,255,255,0.06)',
+    bg: 'rgba(255,255,255,0.02)',
+    bar: 'rgba(255,255,255,0.15)',
+    badge: 'rgba(245,240,235,0.3)',
+    badgeBg: 'rgba(255,255,255,0.05)',
+    value: 'rgba(245,240,235,0.25)',
   }
   if (accuracy >= 80) return {
-    border: 'border-emerald-500/20',
-    bg: 'bg-emerald-500/[0.06]',
-    bar: 'bg-emerald-400',
-    badge: 'text-emerald-400 bg-emerald-500/10',
-    label: 'text-emerald-400/70',
-    value: 'text-emerald-300',
+    border: 'rgba(74,222,128,0.2)',
+    bg: 'rgba(74,222,128,0.06)',
+    bar: '#4ade80',
+    badge: '#4ade80',
+    badgeBg: 'rgba(74,222,128,0.1)',
+    value: '#4ade80',
   }
   if (accuracy >= 60) return {
-    border: 'border-amber-500/20',
-    bg: 'bg-amber-500/[0.06]',
-    bar: 'bg-amber-400',
-    badge: 'text-amber-400 bg-amber-500/10',
-    label: 'text-amber-400/70',
-    value: 'text-amber-300',
+    border: 'rgba(251,191,36,0.2)',
+    bg: 'rgba(251,191,36,0.06)',
+    bar: '#fbbf24',
+    badge: '#fbbf24',
+    badgeBg: 'rgba(251,191,36,0.1)',
+    value: '#fbbf24',
   }
   return {
-    border: 'border-rose-500/20',
-    bg: 'bg-rose-500/[0.06]',
-    bar: 'bg-rose-400',
-    badge: 'text-rose-400 bg-rose-500/10',
-    label: 'text-rose-400/70',
-    value: 'text-rose-300',
+    border: 'rgba(224,107,73,0.25)',
+    bg: 'rgba(224,107,73,0.07)',
+    bar: '#e06b49',
+    badge: '#e06b49',
+    badgeBg: 'rgba(224,107,73,0.12)',
+    value: '#e06b49',
   }
 }
 
@@ -51,19 +60,13 @@ function statusLabel(accuracy: number, count: number) {
 export function DomainMap({ domainMap }: DomainMapProps) {
   const entries = Object.entries(domainMap).sort(([, a], [, b]) => a.accuracy - b.accuracy)
 
-  if (entries.length === 0) {
-    return (
-      <p className="text-sm text-white/30 py-6">
-        Nenhum certificado encontrado. Complete cursos na CEFIS para ver seu mapa.
-      </p>
-    )
-  }
+  if (entries.length === 0) return null
 
   return (
     <motion.div
       initial="initial"
       animate="animate"
-      variants={{ animate: { transition: { staggerChildren: 0.06 } } }}
+      variants={{ animate: { transition: { staggerChildren: 0.05 } } }}
       className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5"
     >
       {entries.map(([category, data]) => {
@@ -71,29 +74,46 @@ export function DomainMap({ domainMap }: DomainMapProps) {
         return (
           <motion.div
             key={category}
-            variants={{ initial: { opacity: 0, y: 12 }, animate: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.25, 0.1, 0.25, 1] } } }}
-            className={cn('rounded-xl border p-4 flex flex-col gap-3 transition-all hover:scale-[1.02] duration-200', c.border, c.bg)}
+            variants={{
+              initial: { opacity: 0, y: 10 },
+              animate: { opacity: 1, y: 0, transition: { duration: 0.35, ease: [0.25, 0.1, 0.25, 1] } },
+            }}
+            whileHover={{ y: -2, transition: { duration: 0.15 } }}
+            className="rounded-2xl p-4 flex flex-col gap-3 cursor-default"
+            style={{
+              background: c.bg,
+              border: `1px solid ${c.border}`,
+              boxShadow: '0 4px 24px rgba(0,0,0,0.3)',
+            }}
           >
             <div className="flex items-start justify-between gap-2">
-              <p className="text-[11px] font-medium text-white/70 leading-tight">{category}</p>
-              <span className={cn('shrink-0 text-[9px] font-semibold uppercase tracking-wider rounded-full px-1.5 py-0.5', c.badge)}>
+              <p className="text-[11px] font-medium leading-tight" style={{ color: 'rgba(245,240,235,0.75)' }}>
+                {category}
+              </p>
+              <span
+                className="shrink-0 text-[9px] font-semibold uppercase tracking-wider rounded-full px-1.5 py-0.5 whitespace-nowrap"
+                style={{ color: c.badge, background: c.badgeBg }}
+              >
                 {statusLabel(data.accuracy, data.count)}
               </span>
             </div>
+
             <div className="flex items-end justify-between">
-              <span className={cn('text-2xl font-bold leading-none tabular-nums', c.value)}>
+              <span className="text-2xl font-semibold tabular-nums leading-none" style={{ color: c.value }}>
                 {data.count === 0 ? '—' : `${Math.round(data.accuracy)}%`}
               </span>
-              <span className="text-[9px] text-white/25 tabular-nums">
+              <span className="text-[9px] tabular-nums" style={{ color: 'rgba(245,240,235,0.3)' }}>
                 {data.count} cert{data.count !== 1 ? 's' : ''}
               </span>
             </div>
-            <div className="h-1 rounded-full bg-white/[0.06] overflow-hidden">
+
+            <div className="h-1 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
               <motion.div
-                className={cn('h-full rounded-full', c.bar)}
+                className="h-full rounded-full"
+                style={{ background: c.bar }}
                 initial={{ width: 0 }}
                 animate={{ width: `${data.count === 0 ? 0 : data.accuracy}%` }}
-                transition={{ duration: 0.8, ease: [0.25, 0.1, 0.25, 1], delay: 0.2 }}
+                transition={{ duration: 0.7, ease: [0.25, 0.1, 0.25, 1], delay: 0.15 }}
               />
             </div>
           </motion.div>

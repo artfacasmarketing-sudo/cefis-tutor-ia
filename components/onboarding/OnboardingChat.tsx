@@ -8,6 +8,8 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Send } from 'lucide-react'
 import { MessageBubble } from './MessageBubble'
 
+const T = 'rgba(245,240,235,'
+
 export function OnboardingChat() {
   const router = useRouter()
   const [input, setInput] = useState('')
@@ -51,17 +53,17 @@ export function OnboardingChat() {
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-4 py-6 space-y-3">
         {messages.length === 0 && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="flex justify-start"
-          >
-            <div className="glass rounded-2xl rounded-bl-sm px-4 py-3 flex items-center gap-1.5 h-11">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex justify-start">
+            <div
+              className="rounded-2xl rounded-bl-sm px-4 py-3 flex items-center gap-1.5 h-11"
+              style={{ background: '#242424', border: '1px solid rgba(255,255,255,0.08)' }}
+            >
               {[0, 1, 2].map(i => (
                 <motion.span
                   key={i}
-                  className="h-1.5 w-1.5 rounded-full bg-indigo-400/70"
-                  animate={{ opacity: [0.3, 1, 0.3], y: [0, -3, 0] }}
+                  className="h-1.5 w-1.5 rounded-full"
+                  style={{ background: '#e06b49' }}
+                  animate={{ opacity: [0.3, 0.8, 0.3], y: [0, -3, 0] }}
                   transition={{ duration: 1.2, delay: i * 0.15, repeat: Infinity }}
                 />
               ))}
@@ -74,17 +76,21 @@ export function OnboardingChat() {
         <AnimatePresence>
           {isLoading && messages[messages.length - 1]?.role === 'user' && (
             <motion.div
-              initial={{ opacity: 0, y: 8 }}
+              initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
               className="flex justify-start"
             >
-              <div className="glass rounded-2xl rounded-bl-sm px-4 py-3 flex items-center gap-1.5 h-11">
+              <div
+                className="rounded-2xl rounded-bl-sm px-4 py-3 flex items-center gap-1.5 h-11"
+                style={{ background: '#242424', border: '1px solid rgba(255,255,255,0.08)' }}
+              >
                 {[0, 1, 2].map(i => (
                   <motion.span
                     key={i}
-                    className="h-1.5 w-1.5 rounded-full bg-indigo-400/70"
-                    animate={{ opacity: [0.3, 1, 0.3], y: [0, -3, 0] }}
+                    className="h-1.5 w-1.5 rounded-full"
+                    style={{ background: '#e06b49' }}
+                    animate={{ opacity: [0.3, 0.8, 0.3], y: [0, -3, 0] }}
                     transition={{ duration: 1.2, delay: i * 0.15, repeat: Infinity }}
                   />
                 ))}
@@ -97,8 +103,8 @@ export function OnboardingChat() {
 
       {/* Input */}
       <div
-        className="shrink-0 border-t border-white/[0.06] px-4 py-4"
-        style={{ background: 'rgba(2,6,23,0.9)', backdropFilter: 'blur(10px)' }}
+        className="shrink-0 border-t px-4 py-4"
+        style={{ background: '#1a1a1a', borderColor: 'rgba(255,255,255,0.07)' }}
       >
         <form onSubmit={handleSubmit} className="flex gap-2 items-end max-w-2xl mx-auto">
           <textarea
@@ -108,16 +114,27 @@ export function OnboardingChat() {
             placeholder="Responda ao tutor… (Enter para enviar)"
             disabled={isLoading}
             rows={1}
-            className="flex-1 resize-none min-h-[44px] max-h-32 rounded-xl border border-white/[0.08] bg-white/[0.04] px-4 py-3 text-sm text-white/85 placeholder:text-white/25 outline-none transition-all focus:border-indigo-500/40 focus:bg-white/[0.06] disabled:opacity-50"
-            style={{ fontFamily: 'inherit' }}
+            className="flex-1 resize-none min-h-[44px] max-h-32 rounded-2xl px-4 py-3 text-sm outline-none transition-all disabled:opacity-50"
+            style={{
+              background: '#242424',
+              border: '1px solid rgba(255,255,255,0.08)',
+              color: `${T}0.85)`,
+              fontFamily: 'inherit',
+            }}
+            onFocus={e => { e.currentTarget.style.borderColor = 'rgba(224,107,73,0.35)' }}
+            onBlur={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)' }}
           />
           <motion.button
             type="submit"
             disabled={!input.trim() || isLoading}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="h-11 w-11 shrink-0 rounded-xl bg-indigo-600 flex items-center justify-center text-white transition-all hover:bg-indigo-500 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
-            style={{ boxShadow: input.trim() ? '0 0 15px rgba(99,102,241,0.3)' : 'none' }}
+            className="h-11 w-11 shrink-0 rounded-2xl flex items-center justify-center transition-all disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+            style={{
+              background: '#e06b49',
+              color: '#f5f0eb',
+              boxShadow: input.trim() ? '0 0 16px rgba(224,107,73,0.3)' : 'none',
+            }}
           >
             <Send className="h-4 w-4" />
           </motion.button>
