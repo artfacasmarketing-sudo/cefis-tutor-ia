@@ -93,7 +93,7 @@ export async function POST(request: Request) {
 
   const [ragChunks, modelMessages] = await Promise.all([
     lastUserText
-      ? matchTranscripts(lastUserText, { threshold: 0.70, count: 5 })
+      ? matchTranscripts(lastUserText, { threshold: 0.5, count: 5 })
       : Promise.resolve([]),
     convertToModelMessages(messages),
   ])
@@ -158,6 +158,13 @@ export async function POST(request: Request) {
       // onFinish.content é só o último step — a tool call fica no step 1, o texto no step 2.
       const allContent = steps.flatMap(s => s.content as ContentPart[])
       const assistantParts = contentToUIParts(allContent)
+
+      // AI SDK v6 expõe texto final em `text` consolidado, mas nem sempre inclui
+      // em steps[].content quando há tool call antes. Garante text part no JSONB.
+      const hasTextPart = assistantParts.some(p => (p as { type: string }).type === 'text')
+      if (text && !hasTextPart) {
+        assistantParts.push({ type: 'text', text })
+      }
 
       console.log('[chat/onFinish] steps:', steps.length, '| parts gerados:', JSON.stringify(assistantParts.map(p => (p as {type:string}).type)))
 
