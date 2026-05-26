@@ -7,6 +7,7 @@ import type { UIMessage } from 'ai'
 import { isTextUIPart } from 'ai'
 import { BookOpen } from 'lucide-react'
 import { FlashModeCard } from './FlashModeCard'
+import { PodcastInlineCard } from './PodcastInlineCard'
 
 const T = (a: number) => `rgba(245,240,235,${a})`
 
@@ -32,9 +33,36 @@ function RagSourceFooter({ text }: { text: string }) {
   )
 }
 
+interface PodcastToolOutput {
+  audioId: string | null
+  topico: string
+  mensagem: string
+}
+
 export function ChatMessage({ message }: ChatMessageProps) {
   const isUser = message.role === 'user'
   const text = message.parts.filter(isTextUIPart).map(p => p.text).join('')
+
+  // Detect podcast tool result (type is "tool-gerar_podcast", state is "output-available")
+  const podcastPart = message.parts.find(p => {
+    const part = p as { type: string; state?: string }
+    return part.type === 'tool-gerar_podcast' && part.state === 'output-available'
+  }) as { output?: PodcastToolOutput } | undefined
+
+  if (podcastPart?.output?.audioId) {
+    const { audioId, topico, mensagem } = podcastPart.output
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        className="flex justify-start"
+      >
+        <PodcastInlineCard audioId={audioId} topico={topico} mensagem={mensagem} />
+      </motion.div>
+    )
+  }
+
   if (!text) return null
 
   // Detect Flash Mode

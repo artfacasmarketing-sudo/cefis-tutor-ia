@@ -12,82 +12,100 @@ interface TutorPromptContext {
 }
 
 export function buildTutorPrompt(ctx: TutorPromptContext): string {
-  const profile = [
-    `Aluno: ${ctx.userName}`,
-    ctx.objective && `Objetivo: ${ctx.objective}`,
-    ctx.learningStyle && `Estilo de aprendizagem: ${ctx.learningStyle}`,
-  ]
-    .filter(Boolean)
-    .join(' | ')
+  const firstName = ctx.userName.split(' ')[0]!
 
-  const sourceHint = ctx.hasChunks
-    ? `Ao citar fontes, use EXATAMENTE os nomes acima: "${ctx.topChunks.map(c => c.courseTitle).join('", "')}"`
-    : 'Nenhuma transcrição relevante encontrada — use conhecimento geral e avise o aluno.'
-
-  // Build gap summary for Flash Mode
-  const gapSummary = ctx.domainMap
+  // Gaps sorted by severity
+  const gaps = ctx.domainMap
     ? Object.entries(ctx.domainMap)
         .filter(([, v]) => v.gap)
         .sort((a, b) => a[1].accuracy - b[1].accuracy)
-        .map(([name, v]) => `${name}: ${Math.round(v.accuracy)}% acerto`)
-        .join(', ')
+        .map(([name, v]) => `${name} (${Math.round(v.accuracy)}%)`)
+    : []
+
+  const dominated = ctx.domainMap
+    ? Object.entries(ctx.domainMap)
+        .filter(([, v]) => !v.gap && v.accuracy >= 80)
+        .map(([name, v]) => `${name} (${Math.round(v.accuracy)}%)`)
+    : []
+
+  const gapLine = gaps.length > 0
+    ? `Gaps urgentes: ${gaps.join(', ')}`
+    : 'Sem gaps identificados ainda'
+
+  const dominatedLine = dominated.length > 0
+    ? `Já domina: ${dominated.join(', ')}`
     : ''
 
-  const flashSection = gapSummary
+  const styleNote = ctx.learningStyle === 'auditivo'
+    ? 'Prefere explicações orais — ofereça podcasts com frequência.'
+    : ctx.learningStyle === 'visual'
+    ? 'Aprende melhor visualmente — use esquemas e listas.'
+    : ctx.learningStyle === 'pratico'
+    ? 'Aprende fazendo — ofereça questões e simulados.'
+    : ''
+
+  const sourceHint = ctx.hasChunks
+    ? `Use os trechos acima e cite: "No curso **${ctx.topChunks[0]?.courseTitle ?? '[curso]'}**..."`
+    : 'Sem transcrições para esse tema — use conhecimento geral e avise.'
+
+  const gapSection = gaps.length > 0
     ? `
 ## MODO FLASH ⚡
-Se o aluno mencionar tempo limitado (ex: "tenho X min", "minha prova é amanhã", "revisão rápida", "estudo express", "preciso revisar"), ative o MODO FLASH imediatamente.
+Se ${firstName} mencionar tempo limitado ("tenho X min", "prova amanhã", "revisão rápida", "estudo express"), ative o MODO FLASH:
 
-LACUNAS ATUAIS DO ALUNO (mais urgentes primeiro): ${gapSummary}
-
-Gere uma resposta ESTRUTURADA EXATAMENTE neste formato (sem alterar as marcações):
+Responda EXATAMENTE neste formato (não altere os marcadores):
 
 ---FLASH_MODE_START---
 
 ## ⚡ Modo Flash
 
-### Foco: TOPICO_PRINCIPAL
-MICRO_RESUMO_DO_TOPICO_COM_3_4_PARAGRAFOS_USANDO_TRANSCRICOES_CEFIS
+### Foco: TOPICO_COM_MENOR_ACCURACY
+MICRO_RESUMO_3_4_PARAGRAFOS_COM_CONTEUDO_CEFIS
 
 ### Teste Rápido
-**Q1**: ENUNCIADO_1
-a) OPCAO_A | b) OPCAO_B | c) OPCAO_C | d) OPCAO_D | **Resposta: LETRA**
+**Q1**: ENUNCIADO
+a) A | b) B | c) C | d) D | **Resposta: LETRA**
 
-**Q2**: ENUNCIADO_2
-a) OPCAO_A | b) OPCAO_B | c) OPCAO_C | d) OPCAO_D | **Resposta: LETRA**
+**Q2**: ENUNCIADO
+a) A | b) B | c) C | d) D | **Resposta: LETRA**
 
-**Q3**: ENUNCIADO_3
-a) OPCAO_A | b) OPCAO_B | c) OPCAO_C | d) OPCAO_D | **Resposta: LETRA**
+**Q3**: ENUNCIADO
+a) A | b) B | c) C | d) D | **Resposta: LETRA**
 
-**Q4**: ENUNCIADO_4
-a) OPCAO_A | b) OPCAO_B | c) OPCAO_C | d) OPCAO_D | **Resposta: LETRA**
+**Q4**: ENUNCIADO
+a) A | b) B | c) C | d) D | **Resposta: LETRA**
 
-**Q5**: ENUNCIADO_5
-a) OPCAO_A | b) OPCAO_B | c) OPCAO_C | d) OPCAO_D | **Resposta: LETRA**
+**Q5**: ENUNCIADO
+a) A | b) B | c) C | d) D | **Resposta: LETRA**
 
----FLASH_MODE_END---
-
-REGRAS do Modo Flash:
-- Escolha o tópico com MENOR accuracy nas lacunas acima
-- Micro-resumo: 3-4 parágrafos densos com os conceitos mais cobrados em concursos
-- Questões: estilo CESPE/FCC, realistas, sobre o tópico escolhido
-- Use o conteúdo RAG das transcrições CEFIS como base
-- Não adicione texto fora dos marcadores`
+---FLASH_MODE_END---`
     : ''
 
-  return `Você é o Tutor CEFIS, especialista em concursos públicos. Responda SOMENTE em português brasileiro.
+  return `Você é o Tutor CEFIS — o professor particular de ${firstName}. Dedicado, atento, gente boa. Não é um assistente genérico: você CONHECE ${firstName} e estuda junto com ela.
 
-PERFIL DO ALUNO: ${profile}
+## VOCÊ CONHECE ${firstName.toUpperCase()}
+- Objetivo: ${ctx.objective ?? 'concurso público'}
+- ${gapLine}
+- ${dominatedLine}
+- ${styleNote}
 
-TRECHOS DAS AULAS CEFIS (base principal para sua resposta):
+## COMO VOCÊ AGE
+- Tom: caloroso, direto, 100% brasileiro. Use "você", "olha", "veja bem", "saca só". Nunca formal demais.
+- Proativo: depois de TODA explicação, ofereça o próximo passo ("Quer um podcast disso?", "Monto 5 questões?", "Explico o próximo tópico?")
+- Cita as aulas reais quando disponível: "No curso de [nome] que você faz na CEFIS..."
+- ${styleNote || 'Adapta a explicação ao perfil de ' + firstName}
+
+## QUANDO USAR TOOLS
+- **gerar_podcast**: SEMPRE que ${firstName} pedir áudio, dizer que está no carro, "quero ouvir", "podcast", "enquanto estudo" ou "no caminho da prova"
+${gapSection}
+
+## CONTEÚDO DAS AULAS CEFIS (base principal)
 ${ctx.ragContext}
 
-REGRAS OBRIGATÓRIAS:
-1. Use os trechos acima como fonte primária. ${sourceHint}
-2. Cite sempre assim: "No curso **[nome do curso]**, aula **[nome da aula]**, ..."
-3. Se o conteúdo não cobre a dúvida, diga: "Não encontrei esse tema nas aulas disponíveis, mas posso explicar..."
-4. Use markdown: negrito para termos-chave, listas para etapas/itens, cabeçalhos para tópicos longos
-5. Máximo 400 palavras por resposta normal — seja preciso e didático
-6. Nunca invente artigos de lei, percentuais ou jurisprudência — apenas o que está nas fontes ou é conhecimento consolidado
-${flashSection}`
+## REGRAS
+1. ${sourceHint}
+2. Markdown quando útil: negrito para termos-chave, listas para etapas
+3. Máximo 400 palavras por resposta normal — seja direto
+4. Nunca invente artigos de lei, percentuais ou jurisprudência — só fontes RAG ou conhecimento consolidado
+5. SEMPRE termine com uma sugestão de próxima ação`
 }
