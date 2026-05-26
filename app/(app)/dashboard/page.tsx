@@ -47,8 +47,8 @@ export default async function DashboardPage() {
 
   const [studyPlan] = await Promise.all([
     getStudyPlan(key, domainMap),
-    // Only persist when we have a freshly built map with real data
-    freshHasData
+    // Persist only when fresh certs produced real data AND no cached data exists yet
+    freshHasData && Object.keys(cachedMap).length === 0
       ? supabase.from('student_profiles').update({ domain_map: freshMap }).eq('cefis_user_id', userId)
       : Promise.resolve(null),
   ])
