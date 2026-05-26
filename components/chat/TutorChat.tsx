@@ -1,55 +1,84 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useChat } from '@ai-sdk/react'
 import { DefaultChatTransport } from 'ai'
 import type { UIMessage } from 'ai'
-import { Send, BookOpen, PenSquare } from 'lucide-react'
+import { Send, BookOpen, LayoutList } from 'lucide-react'
 import { ChatMessage, ChatMessageSkeleton } from './ChatMessage'
 
 const SUGGESTIONS = [
   'Explica o princípio da legalidade no Direito Administrativo',
   'Qual a diferença entre cargo, emprego e função pública?',
-  'Como funciona o processo administrativo disciplinar?',
-  'Quais são os poderes da administração pública?',
+  'tenho 15 minutos, minha prova é amanhã de Contabilidade',
+  'Quero ouvir um podcast sobre Direito Administrativo',
 ]
 
 const T = (a: number) => `rgba(245,240,235,${a})`
 
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString('pt-BR', {
-    day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit',
-  })
-}
-
 interface TutorChatProps {
-  historyMessages?: UIMessage[]
-  historyCount?: number
-  lastHistoryAt?: string | null
+  conversationId: string | null
+  initialMessages?: UIMessage[]
+  onOpenSidebar?: () => void
 }
 
-export function TutorChat({
-  historyMessages = [],
-  historyCount = 0,
-  lastHistoryAt = null,
-}: TutorChatProps) {
+
+export function TutorChat({ conversationId, initialMessages = [], onOpenSidebar }: TutorChatProps) {
+  const router = useRouter()
   const [input, setInput] = useState('')
+  const [activeConvId, setActiveConvId] = useState(conversationId)
   const bottomRef = useRef<HTMLDivElement>(null)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   const { messages, sendMessage, status, setMessages } = useChat({
-    transport: new DefaultChatTransport({ api: '/api/chat' }),
-    messages: historyMessages,
+    transport: new DefaultChatTransport({
+      api: '/api/chat',
+      body: { conversationId: activeConvId },
+      fetch: async (url, init) => {
+        const res = await fetch(url, init)
+        // Capture conversationId from response header
+        const newConvId = res.headers.get('x-conversation-id')
+        if (newConvId && newConvId !== activeConvId) {
+          setActiveConvId(newConvId)
+          // Update URL without full navigation
+          window.history.replaceState(null, '', `/chat?c=${newConvId}`)
+        }
+        return res
+      },
+    }),
+    messages: initialMessages,
   })
 
   const isLoading = status === 'submitted' || status === 'streaming'
-  const newMessageCount = messages.length - historyCount
-  const hasHistory = historyCount > 0
   const showSuggestions = messages.length === 0 && !isLoading
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, isLoading])
+
+  // Auto-resize textarea
+  useEffect(() => {
+    const ta = textareaRef.current
+    if (!ta) return
+    ta.style.height = 'auto'
+    ta.style.height = `${Math.min(ta.scrollHeight, 120)}px`
+  }, [input])
+
+  // Keyboard shortcut: Cmd+K = new conversation
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault()
+        router.push('/chat')
+        setMessages([])
+        setInput('')
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [router, setMessages])
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -66,13 +95,33 @@ export function TutorChat({
     }
   }
 
-  function handleNewConversation() {
-    setMessages([])
-    setInput('')
-  }
-
   return (
     <div className="flex flex-col h-full">
+      {/* Chat header bar */}
+      <div
+        className="shrink-0 flex items-center justify-between px-4 py-2.5 border-b"
+        style={{ background: '#242424', borderColor: 'rgba(255,255,255,0.07)' }}
+      >
+        <div className="flex items-center gap-3">
+          <button
+            onClick={onOpenSidebar}
+            className="md:hidden flex items-center justify-center w-7 h-7 rounded-lg cursor-pointer"
+            style={{ color: T(0.4) }}
+          >
+            <LayoutList className="h-4 w-4" />
+          </button>
+          <p className="text-xs" style={{ color: T(0.35) }}>
+            Respostas baseadas em 18.344 transcrições CEFIS
+          </p>
+        </div>
+        <kbd
+          className="hidden sm:inline-flex items-center gap-1 text-[10px] rounded px-1.5 py-0.5"
+          style={{ background: 'rgba(255,255,255,0.05)', color: T(0.3), border: '1px solid rgba(255,255,255,0.08)' }}
+        >
+          ⌘K Nova
+        </kbd>
+      </div>
+
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
         <AnimatePresence mode="popLayout">
@@ -82,7 +131,7 @@ export function TutorChat({
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.4 }}
+              transition={{ duration: 0.35 }}
               className="flex flex-col items-center justify-center h-full gap-8 py-16"
             >
               <div className="text-center">
@@ -96,7 +145,10 @@ export function TutorChat({
                   Tutor CEFIS
                 </h2>
                 <p className="text-sm mt-1.5 max-w-sm" style={{ color: T(0.4) }}>
-                  Tire dúvidas com base nas transcrições reais das suas aulas
+                  Tire dúvidas, peça revisão rápida ou gere um podcast para ouvir
+                </p>
+                <p className="text-xs mt-1" style={{ color: T(0.25) }}>
+                  ⌘K para nova conversa
                 </p>
               </div>
 
@@ -129,28 +181,7 @@ export function TutorChat({
           )}
         </AnimatePresence>
 
-        {/* History messages */}
-        {messages.slice(0, historyCount).map(m => (
-          <ChatMessage key={m.id} message={m} />
-        ))}
-
-        {/* Separator between history and new messages */}
-        {hasHistory && newMessageCount > 0 && (
-          <div className="flex items-center gap-3 py-2">
-            <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.06)' }} />
-            <span className="text-[10px] font-medium px-2 rounded-full"
-              style={{ color: T(0.3), background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
-              {lastHistoryAt ? `Conversa anterior · ${formatDate(lastHistoryAt)}` : 'Conversa anterior'}
-            </span>
-            <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.06)' }} />
-          </div>
-        )}
-
-        {/* New messages */}
-        {messages.slice(historyCount).map(m => (
-          <ChatMessage key={m.id} message={m} />
-        ))}
-
+        {messages.map(m => <ChatMessage key={m.id} message={m} />)}
         {isLoading && messages[messages.length - 1]?.role === 'user' && <ChatMessageSkeleton />}
         <div ref={bottomRef} />
       </div>
@@ -160,44 +191,28 @@ export function TutorChat({
         className="shrink-0 border-t px-4 py-3"
         style={{ background: '#1a1a1a', borderColor: 'rgba(255,255,255,0.07)' }}
       >
-        <div className="flex gap-2 items-end max-w-4xl mx-auto">
-          {/* Nova conversa */}
-          {messages.length > 0 && (
-            <motion.button
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              onClick={handleNewConversation}
-              title="Nova conversa"
-              className="h-11 w-11 shrink-0 rounded-2xl flex items-center justify-center transition-all cursor-pointer"
-              style={{ background: '#242424', border: '1px solid rgba(255,255,255,0.08)', color: T(0.4) }}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = T(0.75) }}
-              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = T(0.4) }}
-            >
-              <PenSquare className="h-4 w-4" />
-            </motion.button>
-          )}
-
+        <form onSubmit={handleSubmit} className="flex gap-2 items-end max-w-4xl mx-auto">
           <textarea
+            ref={textareaRef}
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Digite sua dúvida… (Enter para enviar)"
+            placeholder="Digite sua dúvida… (Enter para enviar, Shift+Enter nova linha)"
             disabled={isLoading}
             rows={1}
-            className="flex-1 resize-none min-h-[44px] max-h-32 rounded-2xl px-4 py-3 text-sm outline-none transition-all disabled:opacity-50"
+            className="flex-1 resize-none min-h-[44px] rounded-2xl px-4 py-3 text-sm outline-none transition-all disabled:opacity-50"
             style={{
               background: '#242424',
               border: '1px solid rgba(255,255,255,0.08)',
               color: T(0.85),
               fontFamily: 'inherit',
+              maxHeight: '120px',
             }}
             onFocus={e => { e.currentTarget.style.borderColor = 'rgba(224,107,73,0.35)' }}
             onBlur={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)' }}
           />
-
           <motion.button
-            type="button"
-            onClick={handleSubmit}
+            type="submit"
             disabled={!input.trim() || isLoading}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
@@ -210,7 +225,7 @@ export function TutorChat({
           >
             <Send className="h-4 w-4" />
           </motion.button>
-        </div>
+        </form>
       </div>
     </div>
   )
