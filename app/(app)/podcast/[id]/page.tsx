@@ -13,20 +13,8 @@ export default function PodcastPlayerPage() {
   const [showScript, setShowScript] = useState(false)
 
   return (
-    <div className="min-h-screen bg-zinc-50 flex flex-col">
-      <header className="bg-white border-b border-zinc-200 px-6 py-4">
-        <div className="max-w-2xl mx-auto flex items-center justify-between">
-          <h1 className="text-base font-semibold text-zinc-900">Player</h1>
-          <a
-            href="/podcast"
-            className="text-xs text-zinc-500 hover:text-zinc-900 transition-colors"
-          >
-            ← Meus podcasts
-          </a>
-        </div>
-      </header>
-
-      <main className="flex-1 max-w-2xl w-full mx-auto px-6 py-8 space-y-6">
+    <div className="flex flex-col">
+      <main className="max-w-2xl w-full mx-auto px-4 sm:px-6 py-8 space-y-6">
         {/* Generating state */}
         {status === 'generating' && (
           <div className="bg-white rounded-2xl border border-zinc-200 p-8 flex flex-col items-center text-center gap-4">

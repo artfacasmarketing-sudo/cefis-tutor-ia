@@ -1,6 +1,6 @@
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
-import { Mic, Clock, CheckCircle, XCircle, Loader2, Plus } from 'lucide-react'
+import { Mic, Clock, CheckCircle, XCircle, Loader2 } from 'lucide-react'
 import { createSupabaseAdmin } from '@/lib/supabase/server'
 import { cn } from '@/lib/utils'
 
@@ -65,26 +65,8 @@ export default async function PodcastListPage() {
   const list = (audios ?? []) as AudioRow[]
 
   return (
-    <div className="min-h-screen bg-zinc-50 flex flex-col">
-      <header className="bg-white border-b border-zinc-200 px-6 py-4">
-        <div className="max-w-3xl mx-auto flex items-center justify-between">
-          <div>
-            <h1 className="text-base font-semibold text-zinc-900">Meus Podcasts</h1>
-            <p className="text-xs text-zinc-500 mt-0.5">
-              Episódios gerados com base nas suas lacunas de estudo
-            </p>
-          </div>
-          <a
-            href="/podcast/generate"
-            className="flex items-center gap-1.5 text-xs font-medium text-white bg-zinc-900 hover:bg-zinc-700 rounded-lg px-3 py-2 transition-colors"
-          >
-            <Plus className="h-3.5 w-3.5" />
-            Gerar novo
-          </a>
-        </div>
-      </header>
-
-      <main className="flex-1 max-w-3xl w-full mx-auto px-6 py-8">
+    <div className="flex flex-col">
+      <main className="max-w-3xl w-full mx-auto px-4 sm:px-6 py-8">
         {list.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-zinc-300 bg-white p-16 flex flex-col items-center text-center gap-4">
             <div className="w-14 h-14 rounded-full bg-zinc-100 flex items-center justify-center">

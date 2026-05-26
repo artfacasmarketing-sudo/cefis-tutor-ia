@@ -24,19 +24,15 @@ export default async function OnboardingPage() {
   if (data?.onboarding_completed) redirect('/dashboard')
 
   return (
-    <div className="min-h-screen bg-zinc-50 flex flex-col">
-      {/* Header */}
-      <header className="bg-white border-b border-zinc-200 px-6 py-4 shrink-0">
-        <div className="max-w-2xl mx-auto">
-          <h1 className="text-base font-semibold text-zinc-900">CEFIS Tutor</h1>
-          <p className="text-xs text-zinc-500 mt-0.5">
-            Vamos personalizar sua experiência de estudo
-          </p>
-        </div>
-      </header>
+    <div className="flex flex-col" style={{ height: 'calc(100vh - 56px)' }}>
+      {/* Slim onboarding header */}
+      <div className="bg-white border-b border-zinc-100 px-6 py-3 shrink-0 text-center">
+        <p className="text-xs text-zinc-500">
+          Vamos personalizar sua experiência de estudo — responda algumas perguntas rápidas
+        </p>
+      </div>
 
-      {/* Chat area */}
-      <div className="flex-1 max-w-2xl w-full mx-auto flex flex-col" style={{ height: 'calc(100vh - 73px)' }}>
+      <div className="flex-1 max-w-2xl w-full mx-auto flex flex-col overflow-hidden">
         <OnboardingChat />
       </div>
     </div>

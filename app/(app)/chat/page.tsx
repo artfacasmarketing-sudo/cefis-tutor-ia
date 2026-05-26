@@ -22,28 +22,17 @@ export default async function ChatPage() {
   if (!profile?.onboarding_completed) redirect('/onboarding')
 
   return (
-    <div className="min-h-screen bg-zinc-50 flex flex-col">
-      <header className="bg-white border-b border-zinc-200 px-6 py-4 shrink-0">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <div>
-            <h1 className="text-base font-semibold text-zinc-900">Chat de Dúvidas</h1>
-            <p className="text-xs text-zinc-500 mt-0.5">
-              Respostas baseadas nas transcrições reais das aulas CEFIS
-            </p>
-          </div>
-          <a
-            href="/dashboard"
-            className="text-xs text-zinc-500 hover:text-zinc-900 transition-colors"
-          >
-            ← Voltar
-          </a>
+    <div className="flex flex-col" style={{ height: 'calc(100vh - 56px)' }}>
+      {/* Page sub-header */}
+      <div className="bg-white border-b border-zinc-100 px-6 py-3 shrink-0">
+        <div className="max-w-4xl mx-auto">
+          <p className="text-xs text-zinc-500">
+            Respostas baseadas nas transcrições reais das aulas CEFIS · 18.344 chunks indexados
+          </p>
         </div>
-      </header>
+      </div>
 
-      <div
-        className="flex-1 max-w-4xl w-full mx-auto flex flex-col"
-        style={{ height: 'calc(100vh - 73px)' }}
-      >
+      <div className="flex-1 max-w-4xl w-full mx-auto flex flex-col overflow-hidden">
         <TutorChat />
       </div>
     </div>

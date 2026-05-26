@@ -34,20 +34,8 @@ export default async function GeneratePodcastPage() {
     gaps.length > 0 ? gaps.map(g => g.name) : [profile.objective ?? 'Concursos Públicos']
 
   return (
-    <div className="min-h-screen bg-zinc-50 flex flex-col">
-      <header className="bg-white border-b border-zinc-200 px-6 py-4">
-        <div className="max-w-2xl mx-auto flex items-center justify-between">
-          <div>
-            <h1 className="text-base font-semibold text-zinc-900">Gerar Podcast</h1>
-            <p className="text-xs text-zinc-500 mt-0.5">Script com GPT-4o + narração ElevenLabs</p>
-          </div>
-          <a href="/podcast" className="text-xs text-zinc-500 hover:text-zinc-900 transition-colors">
-            ← Meus podcasts
-          </a>
-        </div>
-      </header>
-
-      <main className="flex-1 max-w-2xl w-full mx-auto px-6 py-10 space-y-8">
+    <div className="flex flex-col">
+      <main className="max-w-2xl w-full mx-auto px-4 sm:px-6 py-8 space-y-8">
         {/* Preview card */}
         <div className="bg-white rounded-2xl border border-zinc-200 p-6 space-y-5">
           <div className="flex items-center gap-3">
