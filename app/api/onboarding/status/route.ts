@@ -1,12 +1,13 @@
 import { cookies } from 'next/headers'
-import { redirect } from 'next/navigation'
 import { createSupabaseAdmin } from '@/lib/supabase/server'
 
-export default async function Home() {
+export async function GET() {
   const cookieStore = await cookies()
   const userId = cookieStore.get('cefis_user_id')?.value
 
-  if (!userId) redirect('/login')
+  if (!userId) {
+    return Response.json({ completed: false })
+  }
 
   const supabase = createSupabaseAdmin()
   const { data } = await supabase
@@ -15,5 +16,5 @@ export default async function Home() {
     .eq('cefis_user_id', userId)
     .single()
 
-  redirect(data?.onboarding_completed ? '/dashboard' : '/onboarding')
+  return Response.json({ completed: data?.onboarding_completed ?? false })
 }

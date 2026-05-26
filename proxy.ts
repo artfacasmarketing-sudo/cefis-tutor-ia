@@ -10,10 +10,6 @@ export function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  if (pathname === '/login' && hasKey) {
-    return NextResponse.redirect(new URL('/dashboard', request.url))
-  }
-
   return NextResponse.next()
 }
 
@@ -24,6 +20,5 @@ export const config = {
     '/chat/:path*',
     '/plano/:path*',
     '/podcast/:path*',
-    '/login',
   ],
 }

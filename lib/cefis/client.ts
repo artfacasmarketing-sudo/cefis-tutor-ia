@@ -47,7 +47,7 @@ export async function cefisLogin(
   const res = await fetchWithRetry(`${V1_BASE}/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password }),
+    body: JSON.stringify({ email, pass: password }),
   })
 
   if (!res.ok) {
