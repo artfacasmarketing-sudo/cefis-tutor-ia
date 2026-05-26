@@ -39,6 +39,7 @@ export default async function PodcastListPage() {
     .from('generated_audios')
     .select('id, title, status, topics, created_at')
     .eq('student_profile_id', profile.id)
+    .neq('status', 'error')
     .order('created_at', { ascending: false })
     .limit(20)
 

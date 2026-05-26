@@ -5,6 +5,7 @@ import { openai } from '@/lib/ai/openai'
 import { matchTranscripts, formatRagContext } from '@/lib/ai/rag'
 import { buildTutorPrompt } from '@/lib/prompts/tutor'
 import { createSupabaseAdmin } from '@/lib/supabase/server'
+import type { DomainMap } from '@/types/domain'
 
 export const maxDuration = 45
 
@@ -32,10 +33,10 @@ export async function POST(request: Request) {
 
   const supabase = createSupabaseAdmin()
 
-  // Load student profile for personalization
+  // Load student profile for personalization + domain_map for Flash Mode
   const { data: profile } = await supabase
     .from('student_profiles')
-    .select('id, name, objective, learning_style')
+    .select('id, name, objective, learning_style, domain_map')
     .eq('cefis_user_id', userId)
     .single()
 
@@ -59,6 +60,7 @@ export async function POST(request: Request) {
       courseTitle: c.courseTitle,
       lessonTitle: c.lessonTitle,
     })),
+    domainMap: (profile?.domain_map ?? undefined) as DomainMap | undefined,
   })
 
   const result = streamText({

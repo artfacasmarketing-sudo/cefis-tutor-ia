@@ -5,15 +5,56 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import type { UIMessage } from 'ai'
 import { isTextUIPart } from 'ai'
+import { BookOpen } from 'lucide-react'
+import { FlashModeCard } from './FlashModeCard'
 
-const T = 'rgba(245,240,235,'
+const T = (a: number) => `rgba(245,240,235,${a})`
 
 interface ChatMessageProps { message: UIMessage }
+
+function RagSourceFooter({ text }: { text: string }) {
+  // Extract course names cited in format "**[nome do curso]**" or "curso **X**"
+  const courseMatches = [
+    ...text.matchAll(/curso\s+\*\*([^*]+)\*\*/gi),
+    ...text.matchAll(/No curso\s+"?([^",*\n]+)"?/gi),
+  ]
+  const courses = [...new Set(courseMatches.map(m => m[1]?.trim()).filter(Boolean))]
+  if (courses.length === 0) return null
+
+  return (
+    <div className="flex items-start gap-1.5 mt-2 pt-2 border-t" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+      <BookOpen className="h-3 w-3 mt-0.5 shrink-0" style={{ color: '#e06b49' }} />
+      <p className="text-[10px] leading-relaxed" style={{ color: T(0.35) }}>
+        <span className="font-semibold" style={{ color: T(0.5) }}>Fontes CEFIS:</span>{' '}
+        {courses.slice(0, 3).join(' · ')}
+      </p>
+    </div>
+  )
+}
 
 export function ChatMessage({ message }: ChatMessageProps) {
   const isUser = message.role === 'user'
   const text = message.parts.filter(isTextUIPart).map(p => p.text).join('')
   if (!text) return null
+
+  // Detect Flash Mode
+  const hasFlash = text.includes('---FLASH_MODE_START---')
+  if (!isUser && hasFlash) {
+    const flashContent = text
+      .split('---FLASH_MODE_START---')[1]
+      ?.split('---FLASH_MODE_END---')[0]
+      ?.trim() ?? ''
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35, ease: [0.25, 0.1, 0.25, 1] }}
+        className="flex justify-start w-full"
+      >
+        <FlashModeCard content={flashContent} />
+      </motion.div>
+    )
+  }
 
   return (
     <motion.div
@@ -42,13 +83,13 @@ export function ChatMessage({ message }: ChatMessageProps) {
             remarkPlugins={[remarkGfm]}
             components={{
               p: ({ children }) => (
-                <p className="text-sm leading-[1.75] mb-2 last:mb-0" style={{ color: `${T}0.82)` }}>{children}</p>
+                <p className="text-sm leading-[1.75] mb-2 last:mb-0" style={{ color: T(0.82) }}>{children}</p>
               ),
               strong: ({ children }) => (
                 <strong className="font-semibold" style={{ color: '#f5f0eb' }}>{children}</strong>
               ),
               em: ({ children }) => (
-                <em className="italic" style={{ color: `${T}0.65)` }}>{children}</em>
+                <em className="italic" style={{ color: T(0.65) }}>{children}</em>
               ),
               ul: ({ children }) => (
                 <ul className="text-sm space-y-1.5 mb-2 list-none pl-0">{children}</ul>
@@ -57,7 +98,7 @@ export function ChatMessage({ message }: ChatMessageProps) {
                 <ol className="text-sm space-y-1.5 mb-2 list-decimal list-inside">{children}</ol>
               ),
               li: ({ children }) => (
-                <li className="flex gap-2 leading-relaxed" style={{ color: `${T}0.72)` }}>
+                <li className="flex gap-2 leading-relaxed" style={{ color: T(0.72) }}>
                   <span style={{ color: '#e06b49', marginTop: '6px' }} className="shrink-0 text-xs">▸</span>
                   <span>{children}</span>
                 </li>
@@ -66,7 +107,7 @@ export function ChatMessage({ message }: ChatMessageProps) {
                 <h2 className="text-sm font-semibold mt-4 mb-1.5" style={{ color: '#f5f0eb' }}>{children}</h2>
               ),
               h3: ({ children }) => (
-                <h3 className="text-sm font-medium mt-3 mb-1" style={{ color: `${T}0.9)` }}>{children}</h3>
+                <h3 className="text-sm font-medium mt-3 mb-1" style={{ color: T(0.9) }}>{children}</h3>
               ),
               blockquote: ({ children }) => (
                 <blockquote
@@ -74,7 +115,7 @@ export function ChatMessage({ message }: ChatMessageProps) {
                   style={{
                     borderColor: 'rgba(224,107,73,0.4)',
                     background: 'rgba(224,107,73,0.05)',
-                    color: `${T}0.55)`,
+                    color: T(0.55),
                   }}
                 >
                   {children}
@@ -85,7 +126,7 @@ export function ChatMessage({ message }: ChatMessageProps) {
                 return block ? (
                   <pre
                     className="rounded-xl p-3 text-xs overflow-x-auto my-2 font-mono"
-                    style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', color: `${T}0.7)` }}
+                    style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', color: T(0.7) }}
                   >
                     <code>{children}</code>
                   </pre>
@@ -102,6 +143,7 @@ export function ChatMessage({ message }: ChatMessageProps) {
           >
             {text}
           </ReactMarkdown>
+          <RagSourceFooter text={text} />
         </div>
       )}
     </motion.div>

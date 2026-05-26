@@ -1,13 +1,14 @@
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
-import { TrendingUp, Award, Clock } from 'lucide-react'
+import { Award } from 'lucide-react'
 import { createSupabaseAdmin } from '@/lib/supabase/server'
 import { cefisGetMe, cefisGetCertificates } from '@/lib/cefis/client'
 import { buildDomainMap, getStudyPlan } from '@/lib/diagnosis'
 import { DomainMap } from '@/components/dashboard/DomainMap'
 import { StudyPlanCard } from '@/components/dashboard/StudyPlanCard'
-import { Stagger, FadeUp, SlideUp } from '@/components/ui/animated'
+import { SlideUp } from '@/components/ui/animated'
 import { DashboardHeader } from '@/components/dashboard/DashboardHeader'
+import { StatsCards } from '@/components/dashboard/StatsCards'
 import type { DomainMap as DomainMapType } from '@/types/domain'
 
 export const metadata = { title: 'Dashboard — CEFIS Tutor' }
@@ -53,35 +54,17 @@ export default async function DashboardPage() {
       : Promise.resolve(null),
   ])
 
-  const totalCerts = certificates.length
-  const avgAccuracy = totalCerts > 0
-    ? Math.round(certificates.reduce((s, c) => s + c.accuracy, 0) / totalCerts)
-    : null
-  const gapCount = Object.values(domainMap).filter(d => d.gap).length
-
-  const stats = [
-    {
-      icon: Award,
-      label: 'Certificados',
-      value: String(totalCerts),
-      accent: '#4ade80',
-      accentBg: 'rgba(74,222,128,0.1)',
-    },
-    {
-      icon: TrendingUp,
-      label: 'Acerto médio',
-      value: avgAccuracy !== null ? `${avgAccuracy}%` : '—',
-      accent: '#e06b49',
-      accentBg: 'rgba(224,107,73,0.1)',
-    },
-    {
-      icon: Clock,
-      label: 'Horas / semana',
-      value: profile?.available_hours_week ? `${profile.available_hours_week}h` : '—',
-      accent: '#fbbf24',
-      accentBg: 'rgba(251,191,36,0.1)',
-    },
-  ]
+  // Stats: prefer live certs, fall back to domainMap aggregates
+  const domainEntries = Object.values(domainMap)
+  const totalCerts = certificates.length > 0
+    ? certificates.length
+    : domainEntries.reduce((s, c) => s + c.count, 0)
+  const avgAccuracy = certificates.length > 0
+    ? Math.round(certificates.reduce((s, c) => s + c.accuracy, 0) / certificates.length)
+    : domainEntries.length > 0
+      ? Math.round(domainEntries.reduce((s, c) => s + c.accuracy, 0) / domainEntries.length)
+      : null
+  const gapCount = domainEntries.filter(d => d.gap).length
 
   return (
     <div className="flex flex-col min-h-[calc(100vh-56px)]">
@@ -92,32 +75,12 @@ export default async function DashboardPage() {
       {/* Content */}
       <main className="max-w-6xl mx-auto w-full px-4 sm:px-6 py-8 space-y-10">
 
-        {/* Stats */}
-        <Stagger className="grid grid-cols-3 gap-3" delay={0.08}>
-          {stats.map(({ icon: Icon, label, value, accent, accentBg }) => (
-            <FadeUp key={label}>
-              <div
-                className="rounded-2xl p-4 flex items-center gap-3"
-                style={{
-                  background: '#242424',
-                  border: '1px solid rgba(255,255,255,0.08)',
-                  boxShadow: '0 4px 24px rgba(0,0,0,0.4)',
-                }}
-              >
-                <div
-                  className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-                  style={{ background: accentBg, color: accent }}
-                >
-                  <Icon className="h-4 w-4" />
-                </div>
-                <div>
-                  <p className="text-xl font-semibold tabular-nums text-[#f5f0eb]">{value}</p>
-                  <p className="text-[10px] mt-0.5" style={{ color: 'rgba(245,240,235,0.4)' }}>{label}</p>
-                </div>
-              </div>
-            </FadeUp>
-          ))}
-        </Stagger>
+        {/* Stats with countUp animation */}
+        <StatsCards
+          totalCerts={totalCerts}
+          avgAccuracy={avgAccuracy}
+          hoursPerWeek={profile?.available_hours_week ?? null}
+        />
 
         {/* Domain Map */}
         <SlideUp delay={0.15}>

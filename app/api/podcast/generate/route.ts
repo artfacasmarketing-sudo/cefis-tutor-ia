@@ -13,7 +13,7 @@ async function generateScript(
   const completion = await openai.chat.completions.create({
     model: 'gpt-4o',
     messages: [
-      { role: 'system', content: buildPodcastSystemPrompt() },
+      { role: 'system', content: buildPodcastSystemPrompt(ctx.studentName.split(' ')[0]) },
       { role: 'user', content: buildPodcastUserPrompt(ctx) },
     ],
     max_tokens: 1800,
