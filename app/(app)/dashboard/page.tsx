@@ -1,12 +1,13 @@
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
-import { MessageSquare, Mic, TrendingUp, Award, Clock } from 'lucide-react'
+import { TrendingUp, Award, Clock } from 'lucide-react'
 import { createSupabaseAdmin } from '@/lib/supabase/server'
 import { cefisGetMe, cefisGetCertificates } from '@/lib/cefis/client'
 import { buildDomainMap, getStudyPlan } from '@/lib/diagnosis'
 import { DomainMap } from '@/components/dashboard/DomainMap'
 import { StudyPlanCard } from '@/components/dashboard/StudyPlanCard'
 import { Stagger, FadeUp, SlideUp } from '@/components/ui/animated'
+import { DashboardHeader } from '@/components/dashboard/DashboardHeader'
 import type { DomainMap as DomainMapType } from '@/types/domain'
 
 export const metadata = { title: 'Dashboard — CEFIS Tutor' }
@@ -85,58 +86,8 @@ export default async function DashboardPage() {
   return (
     <div className="flex flex-col min-h-[calc(100vh-56px)]">
 
-      {/* Dashboard header with gradient */}
-      <SlideUp delay={0.03}>
-        <div
-          className="border-b border-white/[0.06] px-4 sm:px-6 py-8"
-          style={{ background: 'linear-gradient(180deg, #242424 0%, #1a1a1a 100%)' }}
-        >
-          <div className="max-w-6xl mx-auto flex flex-col sm:flex-row sm:items-end justify-between gap-6">
-            <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.15em] mb-2"
-                style={{ color: 'rgba(245,240,235,0.35)' }}>
-                Painel do estudante
-              </p>
-              <h1 className="text-[26px] font-semibold tracking-tight text-gradient leading-none">
-                Olá, {firstName}
-              </h1>
-              {profile?.objective && (
-                <p className="mt-2 text-sm" style={{ color: 'rgba(245,240,235,0.5)' }}>
-                  {profile.objective}
-                </p>
-              )}
-            </div>
-            <div className="flex gap-2 shrink-0">
-              <a
-                href="/chat"
-                className="flex items-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-medium transition-all duration-200 cursor-pointer"
-                style={{
-                  background: '#2a2a2a',
-                  border: '1px solid rgba(255,255,255,0.08)',
-                  color: 'rgba(245,240,235,0.7)',
-                  boxShadow: '0 4px 24px rgba(0,0,0,0.4)',
-                }}
-                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = '#f5f0eb' }}
-                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = 'rgba(245,240,235,0.7)' }}
-              >
-                <MessageSquare className="h-4 w-4" />
-                <span className="hidden sm:inline">Chat de Dúvidas</span>
-              </a>
-              <a
-                href="/podcast/generate"
-                className="flex items-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-semibold text-[#f5f0eb] transition-all duration-200 cursor-pointer"
-                style={{
-                  background: '#e06b49',
-                  boxShadow: '0 0 20px rgba(224,107,73,0.3), 0 4px 24px rgba(0,0,0,0.4)',
-                }}
-              >
-                <Mic className="h-4 w-4" />
-                <span className="hidden sm:inline">Gerar Podcast</span>
-              </a>
-            </div>
-          </div>
-        </div>
-      </SlideUp>
+      {/* Dashboard header — client component (has event handlers) */}
+      <DashboardHeader firstName={firstName} objective={profile?.objective} />
 
       {/* Content */}
       <main className="max-w-6xl mx-auto w-full px-4 sm:px-6 py-8 space-y-10">
