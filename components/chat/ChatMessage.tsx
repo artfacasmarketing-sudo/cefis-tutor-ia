@@ -5,7 +5,6 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import type { UIMessage } from 'ai'
 import { isTextUIPart } from 'ai'
-import { BookOpen } from 'lucide-react'
 import { FlashModeCard } from './FlashModeCard'
 import { PodcastInlineCard } from './PodcastInlineCard'
 import { SourcesChips } from './SourcesChips'
@@ -14,26 +13,6 @@ import type { SourceChunk } from './SourcePreviewModal'
 const T = (a: number) => `rgba(245,240,235,${a})`
 
 interface ChatMessageProps { message: UIMessage }
-
-function RagSourceFooter({ text }: { text: string }) {
-  // Extract course names cited in format "**[nome do curso]**" or "curso **X**"
-  const courseMatches = [
-    ...text.matchAll(/curso\s+\*\*([^*]+)\*\*/gi),
-    ...text.matchAll(/No curso\s+"?([^",*\n]+)"?/gi),
-  ]
-  const courses = [...new Set(courseMatches.map(m => m[1]?.trim()).filter(Boolean))]
-  if (courses.length === 0) return null
-
-  return (
-    <div className="flex items-start gap-1.5 mt-2 pt-2 border-t" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
-      <BookOpen className="h-3 w-3 mt-0.5 shrink-0" style={{ color: '#e06b49' }} />
-      <p className="text-[10px] leading-relaxed" style={{ color: T(0.35) }}>
-        <span className="font-semibold" style={{ color: T(0.5) }}>Fontes CEFIS:</span>{' '}
-        {courses.slice(0, 3).join(' · ')}
-      </p>
-    </div>
-  )
-}
 
 interface PodcastToolOutput {
   audioId: string | null
@@ -173,8 +152,7 @@ export function ChatMessage({ message }: ChatMessageProps) {
           >
             {text}
           </ReactMarkdown>
-          <RagSourceFooter text={text} />
-          {/* SourcesChips: usa metadata.sources persistido no DB */}
+          {/* SourcesChips: aparece após reload com metadata.sources do DB */}
           {(() => {
             const meta = message.metadata as { sources?: SourceChunk[] } | undefined
             const sources = meta?.sources

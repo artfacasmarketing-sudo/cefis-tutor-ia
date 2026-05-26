@@ -148,12 +148,18 @@ export async function POST(request: Request) {
         },
       }),
     },
-    onFinish: async ({ text, content }) => {
+    onFinish: async ({ text, steps }) => {
       if (!conversationId) return
 
       const convId = conversationId
       const userParts = [{ type: 'text', text: lastUserText }]
-      const assistantParts = contentToUIParts(content as ContentPart[])
+
+      // Bug A fix: usar TODOS os steps para capturar tool-call+tool-result.
+      // onFinish.content é só o último step — a tool call fica no step 1, o texto no step 2.
+      const allContent = steps.flatMap(s => s.content as ContentPart[])
+      const assistantParts = contentToUIParts(allContent)
+
+      console.log('[chat/onFinish] steps:', steps.length, '| parts gerados:', JSON.stringify(assistantParts.map(p => (p as {type:string}).type)))
 
       await Promise.all([
         // Save user message with parts
