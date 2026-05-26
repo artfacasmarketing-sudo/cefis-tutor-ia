@@ -37,19 +37,19 @@ export default async function DashboardPage() {
   const displayName = profile?.name ?? user?.name ?? 'Aluno'
   const firstName = displayName.split(' ')[0]
 
-  // Use fresh certificates when available; fall back to cached domain_map
+  // Domain map: prefer fresh build, fall back to cached from DB
   const cachedMap = (profile?.domain_map ?? {}) as DomainMapType
-  const domainMap: DomainMapType = certificates.length > 0
-    ? buildDomainMap(certificates)
-    : cachedMap
+  const freshMap = certificates.length > 0 ? buildDomainMap(certificates) : null
+  const freshHasData = freshMap !== null && Object.keys(freshMap).length > 0
+  const domainMap: DomainMapType = freshHasData ? freshMap! : cachedMap
 
   const hasDomainData = Object.keys(domainMap).length > 0
 
   const [studyPlan] = await Promise.all([
     getStudyPlan(key, domainMap),
-    // Persist updated map only when we have fresh data
-    certificates.length > 0
-      ? supabase.from('student_profiles').update({ domain_map: domainMap }).eq('cefis_user_id', userId)
+    // Only persist when we have a freshly built map with real data
+    freshHasData
+      ? supabase.from('student_profiles').update({ domain_map: freshMap }).eq('cefis_user_id', userId)
       : Promise.resolve(null),
   ])
 

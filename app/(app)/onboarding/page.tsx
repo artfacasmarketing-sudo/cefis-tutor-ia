@@ -24,7 +24,7 @@ export default async function OnboardingPage() {
   if (data?.onboarding_completed) redirect('/dashboard')
 
   return (
-    <div className="flex flex-col" style={{ height: 'calc(100vh - 56px)' }}>
+    <div className="flex flex-col" style={{ height: '100dvh' }}>
       {/* Slim onboarding header */}
       <div className="bg-white border-b border-zinc-100 px-6 py-3 shrink-0 text-center">
         <p className="text-xs text-zinc-500">

@@ -22,11 +22,12 @@ export default async function ChatPage() {
   if (!profile?.onboarding_completed) redirect('/onboarding')
 
   return (
-    <div className="flex flex-col" style={{ height: 'calc(100vh - 56px)' }}>
+    <div className="flex flex-col" style={{ height: '100dvh' }}>
       {/* Page sub-header */}
-      <div className="bg-white border-b border-zinc-100 px-6 py-3 shrink-0">
+      <div className="shrink-0 border-b px-6 py-3"
+        style={{ background: '#242424', borderColor: 'rgba(255,255,255,0.07)' }}>
         <div className="max-w-4xl mx-auto">
-          <p className="text-xs text-zinc-500">
+          <p className="text-xs" style={{ color: 'rgba(245,240,235,0.35)' }}>
             Respostas baseadas nas transcrições reais das aulas CEFIS · 18.344 chunks indexados
           </p>
         </div>

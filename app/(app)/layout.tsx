@@ -1,6 +1,6 @@
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
-import { AppNav } from '@/components/layout/AppNav'
+import { Sidebar } from '@/components/layout/Sidebar'
 
 export default async function AppLayout({
   children,
@@ -11,9 +11,10 @@ export default async function AppLayout({
   if (!cookieStore.has('cefis_key')) redirect('/login')
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#020617]">
-      <AppNav />
-      <div className="flex-1 bg-[#020617]">
+    <div className="flex min-h-screen" style={{ background: '#1a1a1a' }}>
+      <Sidebar />
+      {/* Main content: sidebar offset on desktop, hamburger offset on mobile */}
+      <div className="flex-1 min-w-0 md:pl-56 pt-14 md:pt-0">
         {children}
       </div>
     </div>
