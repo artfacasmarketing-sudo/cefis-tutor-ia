@@ -3,7 +3,7 @@
 Tutor de aprendizado com inteligência artificial para o **Hackathon CEFIS 2026**.
 
 ## 🔗 Demo
-> Em breve — deploy Vercel
+> https://cefis-tutor-ia.vercel.app
 
 ## 🎯 O que faz
 
