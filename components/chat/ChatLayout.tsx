@@ -22,8 +22,8 @@ export function ChatLayout({ conversationId, initialMessages }: ChatLayoutProps)
         onMobileClose={() => setMobileSidebarOpen(false)}
       />
 
-      {/* Main chat — offset for sidebar on desktop */}
-      <div className="flex-1 flex flex-col min-w-0 md:ml-[280px]">
+      {/* Main chat — offset for ConversationsSidebar (left-0, w-[280px]) on desktop */}
+      <div className="flex-1 flex flex-col min-w-0 md:ml-[280px] pt-14 md:pt-0">
         <AnimatePresence mode="wait">
           <motion.div
             key={conversationId ?? 'empty'}

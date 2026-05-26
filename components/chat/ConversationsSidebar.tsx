@@ -3,11 +3,19 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { PenSquare, Trash2, MessageSquare, X } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import Link from 'next/link'
+import {
+  PenSquare, Trash2, MessageSquare, X,
+  GraduationCap, LayoutDashboard, Mic, LogOut,
+} from 'lucide-react'
 import type { ConversationListItem } from '@/types/conversation'
 
 const T = (a: number) => `rgba(245,240,235,${a})`
+
+const SIDEBAR_STYLE: React.CSSProperties = {
+  background: '#161616',
+  borderRight: '1px solid rgba(255,255,255,0.06)',
+}
 
 function relativeTime(iso: string) {
   const diff = Date.now() - new Date(iso).getTime()
@@ -31,9 +39,7 @@ function SkeletonItem() {
   )
 }
 
-interface SidebarContentProps {
-  onClose?: () => void
-}
+interface SidebarContentProps { onClose?: () => void }
 
 function SidebarContent({ onClose }: SidebarContentProps) {
   const router = useRouter()
@@ -56,12 +62,18 @@ function SidebarContent({ onClose }: SidebarContentProps) {
 
   useEffect(() => { void fetchConversations() }, [fetchConversations])
 
+  // Listen for new conversation events fired by TutorChat
+  useEffect(() => {
+    const handler = () => void fetchConversations()
+    window.addEventListener('cefis:conversation-updated', handler)
+    return () => window.removeEventListener('cefis:conversation-updated', handler)
+  }, [fetchConversations])
+
   async function handleNew() {
     const res = await fetch('/api/conversations', { method: 'POST' })
     const data = await res.json() as { id: string }
     onClose?.()
     router.push(`/chat?c=${data.id}`)
-    void fetchConversations()
   }
 
   async function handleDelete(e: React.MouseEvent, id: string) {
@@ -74,6 +86,11 @@ function SidebarContent({ onClose }: SidebarContentProps) {
     setDeletingId(null)
   }
 
+  async function handleLogout() {
+    await fetch('/api/auth/logout', { method: 'POST' })
+    window.location.href = '/login'
+  }
+
   function handleSelect(id: string) {
     onClose?.()
     router.push(`/chat?c=${id}`)
@@ -81,25 +98,32 @@ function SidebarContent({ onClose }: SidebarContentProps) {
 
   return (
     <div className="flex flex-col h-full">
-      {/* Header */}
-      <div className="px-3 pt-3 pb-2 shrink-0">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: T(0.3) }}>
-            Conversas
+      {/* ── Header: Logo + Nova conversa ───────────────────── */}
+      <div className="px-4 pt-4 pb-3 shrink-0">
+        <div className="flex items-center gap-2 mb-4">
+          <div
+            className="flex h-7 w-7 items-center justify-center rounded-lg shrink-0"
+            style={{ background: 'rgba(224,107,73,0.12)', border: '1px solid rgba(224,107,73,0.2)' }}
+          >
+            <GraduationCap className="h-3.5 w-3.5" style={{ color: '#e06b49' }} />
+          </div>
+          <span className="text-sm font-semibold" style={{ color: '#f5f0eb' }}>
+            CEFIS Tutor
           </span>
           {onClose && (
             <button
               onClick={onClose}
-              className="w-6 h-6 flex items-center justify-center rounded-lg cursor-pointer"
+              className="ml-auto w-6 h-6 flex items-center justify-center rounded-lg cursor-pointer"
               style={{ color: T(0.35) }}
             >
               <X className="h-3.5 w-3.5" />
             </button>
           )}
         </div>
+
         <button
           onClick={handleNew}
-          className="w-full flex items-center justify-center gap-2 rounded-xl py-2 text-sm font-semibold transition-opacity hover:opacity-90 cursor-pointer"
+          className="w-full flex items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-semibold cursor-pointer transition-opacity hover:opacity-90"
           style={{ background: '#e06b49', color: '#f5f0eb', boxShadow: '0 0 14px rgba(224,107,73,0.2)' }}
         >
           <PenSquare className="h-3.5 w-3.5" />
@@ -107,19 +131,16 @@ function SidebarContent({ onClose }: SidebarContentProps) {
         </button>
       </div>
 
-      {/* List */}
-      <div className="flex-1 overflow-y-auto px-2 py-1 space-y-0.5">
-        {loading && (
-          <div className="space-y-0.5">
-            {[1, 2, 3].map(i => <SkeletonItem key={i} />)}
-          </div>
-        )}
+      {/* ── Conversations list ──────────────────────────────── */}
+      <div className="flex-1 overflow-y-auto px-2 py-1 space-y-0.5 min-h-0">
+        {loading && <>{[1, 2, 3].map(i => <SkeletonItem key={i} />)}</>}
 
         {!loading && conversations.length === 0 && (
           <div className="flex flex-col items-center justify-center h-32 gap-2">
             <MessageSquare className="h-6 w-6" style={{ color: T(0.15) }} />
-            <p className="text-xs text-center" style={{ color: T(0.3) }}>
-              Nenhuma conversa ainda
+            <p className="text-xs text-center px-4" style={{ color: T(0.3) }}>
+              Nenhuma conversa ainda.<br />
+              Clique em &ldquo;Nova conversa&rdquo;.
             </p>
           </div>
         )}
@@ -136,22 +157,20 @@ function SidebarContent({ onClose }: SidebarContentProps) {
                 initial={{ opacity: 0, x: -8 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -8, scale: 0.95 }}
-                transition={{ delay: i * 0.04, duration: 0.25 }}
+                transition={{ delay: i * 0.03, duration: 0.22 }}
                 onClick={() => handleSelect(conv.id)}
                 onMouseEnter={() => setHoveredId(conv.id)}
                 onMouseLeave={() => setHoveredId(null)}
                 disabled={isDeleting}
-                className={cn(
-                  'w-full text-left px-3 py-2.5 rounded-xl transition-all duration-150 cursor-pointer relative group',
-                  isDeleting && 'opacity-40',
-                )}
+                className="w-full text-left px-3 py-2.5 rounded-xl transition-all duration-150 cursor-pointer"
                 style={{
                   background: isActive
                     ? 'rgba(224,107,73,0.1)'
                     : isHovered
                     ? 'rgba(255,255,255,0.04)'
                     : 'transparent',
-                  borderLeft: isActive ? '2px solid #e06b49' : '2px solid transparent',
+                  borderLeft: `2px solid ${isActive ? '#e06b49' : 'transparent'}`,
+                  opacity: isDeleting ? 0.4 : 1,
                 }}
               >
                 <div className="flex items-start justify-between gap-2">
@@ -162,16 +181,12 @@ function SidebarContent({ onClose }: SidebarContentProps) {
                     >
                       {conv.title}
                     </p>
-                    <div className="flex items-center gap-1.5 mt-0.5">
-                      <p className="text-[10px] shrink-0" style={{ color: T(0.3) }}>
-                        {relativeTime(conv.lastMessageAt)}
-                      </p>
-                      {conv.lastUserMessage && isHovered && (
-                        <p className="text-[10px] truncate" style={{ color: T(0.25) }}>
-                          · {conv.lastUserMessage}
-                        </p>
-                      )}
-                    </div>
+                    <p className="text-[10px] mt-0.5 truncate" style={{ color: T(0.3) }}>
+                      {relativeTime(conv.lastMessageAt)}
+                      {isHovered && conv.lastUserMessage
+                        ? ` · ${conv.lastUserMessage.slice(0, 40)}`
+                        : ''}
+                    </p>
                   </div>
 
                   {isHovered && !isDeleting && (
@@ -191,28 +206,54 @@ function SidebarContent({ onClose }: SidebarContentProps) {
           })}
         </AnimatePresence>
       </div>
+
+      {/* ── Footer: nav links + logout ──────────────────────── */}
+      <div
+        className="shrink-0 px-3 py-3 space-y-0.5 border-t"
+        style={{ borderColor: 'rgba(255,255,255,0.06)' }}
+      >
+        {[
+          { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+          { href: '/podcast', icon: Mic, label: 'Podcasts' },
+        ].map(({ href, icon: Icon, label }) => (
+          <Link
+            key={href}
+            href={href}
+            onClick={onClose}
+            className="flex items-center gap-2.5 w-full rounded-xl px-3 py-2 text-xs transition-all duration-150 cursor-pointer hover:bg-white/5"
+            style={{ color: T(0.4) }}
+          >
+            <Icon className="h-3.5 w-3.5 shrink-0" />
+            {label}
+          </Link>
+        ))}
+
+        <button
+          onClick={handleLogout}
+          className="flex items-center gap-2.5 w-full rounded-xl px-3 py-2 text-xs transition-all duration-150 cursor-pointer hover:bg-white/5"
+          style={{ color: T(0.3) }}
+        >
+          <LogOut className="h-3.5 w-3.5 shrink-0" />
+          Sair da conta
+        </button>
+      </div>
     </div>
   )
 }
 
-// Desktop: fixed sidebar (280px), Mobile: sheet drawer
+// ── Desktop fixed + Mobile drawer ───────────────────────────────────────────
 interface ConversationsSidebarProps {
   mobileOpen: boolean
   onMobileClose: () => void
 }
 
-const SIDEBAR_BG: React.CSSProperties = {
-  background: '#161616',
-  borderRight: '1px solid rgba(255,255,255,0.06)',
-}
-
 export function ConversationsSidebar({ mobileOpen, onMobileClose }: ConversationsSidebarProps) {
   return (
     <>
-      {/* Desktop */}
+      {/* Desktop — fixed left-0 (no main sidebar on /chat) */}
       <aside
-        className="hidden md:flex fixed left-[224px] top-0 h-screen w-[280px] flex-col z-30"
-        style={SIDEBAR_BG}
+        className="hidden md:flex fixed left-0 top-0 h-screen w-[280px] flex-col z-30"
+        style={SIDEBAR_STYLE}
       >
         <SidebarContent />
       </aside>
@@ -237,7 +278,7 @@ export function ConversationsSidebar({ mobileOpen, onMobileClose }: Conversation
               exit={{ x: -280 }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
               className="absolute left-0 top-0 h-full w-[280px] flex flex-col"
-              style={SIDEBAR_BG}
+              style={SIDEBAR_STYLE}
             >
               <SidebarContent onClose={onMobileClose} />
             </motion.aside>

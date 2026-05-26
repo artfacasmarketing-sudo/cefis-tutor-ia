@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { Zap, BookOpen, CheckCircle, XCircle, Mic } from 'lucide-react'
-import { useRouter } from 'next/navigation'
+import { useChatContext } from './ChatContext'
 
 const T = (a: number) => `rgba(245,240,235,${a})`
 
@@ -149,7 +149,7 @@ const fadeUp = {
 }
 
 export function FlashModeCard({ content }: FlashModeCardProps) {
-  const router = useRouter()
+  const { sendMessage } = useChatContext()
 
   // Parse sections
   const focoMatch = content.match(/###\s*Foco[:\s]*(.+?)\n([\s\S]+?)(?=###|$)/)
@@ -260,7 +260,7 @@ export function FlashModeCard({ content }: FlashModeCardProps) {
           <motion.button
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
-            onClick={() => router.push('/podcast/generate')}
+            onClick={() => sendMessage({ text: `Gera um podcast sobre ${focoTitle || 'esse tópico'}` })}
             className="flex items-center gap-1.5 rounded-xl px-4 py-2 text-xs font-semibold shrink-0 cursor-pointer"
             style={{
               background: '#e06b49',

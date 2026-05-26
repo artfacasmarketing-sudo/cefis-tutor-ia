@@ -8,6 +8,7 @@ import { DefaultChatTransport } from 'ai'
 import type { UIMessage } from 'ai'
 import { Send, BookOpen, LayoutList } from 'lucide-react'
 import { ChatMessage, ChatMessageSkeleton } from './ChatMessage'
+import { ChatContextProvider } from './ChatContext'
 
 const SUGGESTIONS = [
   'Explica o princípio da legalidade no Direito Administrativo',
@@ -42,8 +43,9 @@ export function TutorChat({ conversationId, initialMessages = [], onOpenSidebar 
         const newConvId = res.headers.get('x-conversation-id')
         if (newConvId && newConvId !== activeConvId) {
           setActiveConvId(newConvId)
-          // Update URL without full navigation
           window.history.replaceState(null, '', `/chat?c=${newConvId}`)
+          // Signal sidebar to refresh its conversation list
+          window.dispatchEvent(new CustomEvent('cefis:conversation-updated'))
         }
         return res
       },
@@ -96,6 +98,7 @@ export function TutorChat({ conversationId, initialMessages = [], onOpenSidebar 
   }
 
   return (
+    <ChatContextProvider value={{ sendMessage }}>
     <div className="flex flex-col h-full">
       {/* Chat header bar */}
       <div
@@ -228,5 +231,6 @@ export function TutorChat({ conversationId, initialMessages = [], onOpenSidebar 
         </form>
       </div>
     </div>
+    </ChatContextProvider>
   )
 }
