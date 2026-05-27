@@ -148,20 +148,12 @@ export function TutorChat({ conversationId, initialMessages = [], onOpenSidebar 
             Treinado em 7.447 aulas reais da CEFIS. Cada resposta cita a aula.
           </p>
         </div>
-        <div className="hidden sm:flex items-center gap-2">
-          <kbd
-            className="inline-flex items-center gap-1 text-[10px] rounded px-1.5 py-0.5"
-            style={{ background: 'rgba(255,255,255,0.05)', color: T(0.3), border: '1px solid rgba(255,255,255,0.08)' }}
-          >
-            ⌘K Nova
-          </kbd>
-          <kbd
-            className="inline-flex items-center gap-1 text-[10px] rounded px-1.5 py-0.5"
-            style={{ background: 'rgba(255,255,255,0.05)', color: T(0.3), border: '1px solid rgba(255,255,255,0.08)' }}
-          >
-            ⌘J Focar
-          </kbd>
-        </div>
+        <kbd
+          className="hidden sm:inline-flex items-center gap-1 text-[10px] rounded px-1.5 py-0.5"
+          style={{ background: 'rgba(255,255,255,0.05)', color: T(0.3), border: '1px solid rgba(255,255,255,0.08)' }}
+        >
+          ⌘K Nova
+        </kbd>
       </div>
 
       {/* Messages + scroll-to-bottom button */}

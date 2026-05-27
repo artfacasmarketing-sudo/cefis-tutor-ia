@@ -29,3 +29,5 @@ Todo concurseiro já viveu "tenho 20 minutos antes da prova, o que revisar?". O 
 **3. A CEFIS prende o aluno na tela. Nosso podcast libera ele pro Uber, academia e antes de dormir — com áudio gerado das aulas que ele compra.**
 
 A CEFIS é uma plataforma de vídeo — requer atenção visual. O podcast inline cria um novo momento de consumo de conteúdo CEFIS: no carro, na academia, no transporte. O aluno diz "quero ouvir sobre Princípio da Legalidade" dentro do próprio chat, e em ~30 segundos recebe um áudio narrado em PT-BR com conteúdo extraído das transcrições de aulas reais — não texto de internet. O pipeline completo (RAG → GPT-4o script → ElevenLabs TTS → Storage → player wavesurfer.js inline) está funcionando em produção, demonstrando maturidade técnica e diferencial competitivo real.
+
+A visão de evolução está documentada em ROADMAP.md no repositório: persistent memory inspirada no Hermes Agent (Nous Research, 64k+ stars), voice-to-voice em tempo real via Pipecat (Daily.co), RAG com re-ranking via ColBERT/Cohere, e planos de estudo adaptativos com LangGraph. O CEFIS Tutor IA não é um protótipo — é a fundação de um produto real.

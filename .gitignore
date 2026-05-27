@@ -45,3 +45,7 @@ data/
 
 # Env
 .env*.local
+
+# Test scripts (não fazem parte do produto)
+scripts/test-scope.ts
+scripts/diag-checks.ts
