@@ -170,6 +170,11 @@ export async function POST(request: Request) {
 
       console.log('[chat/onFinish] steps:', steps.length, '| parts gerados:', JSON.stringify(assistantParts.map(p => (p as {type:string}).type)))
 
+      // Garante ordem user → assistant no histórico independente de race condition
+      const now = Date.now()
+      const userCreatedAt = new Date(now - 100).toISOString()
+      const assistantCreatedAt = new Date(now).toISOString()
+
       await Promise.all([
         // Save user message with parts
         lastUserText
@@ -180,6 +185,7 @@ export async function POST(request: Request) {
               content: lastUserText,
               parts: userParts,
               metadata: { rag_chunks: ragChunks.length },
+              created_at: userCreatedAt,
             })
           : Promise.resolve(),
 
@@ -201,6 +207,7 @@ export async function POST(request: Request) {
               similarity: c.similarity,
             })),
           },
+          created_at: assistantCreatedAt,
         }),
 
         // Touch updated_at on conversation
