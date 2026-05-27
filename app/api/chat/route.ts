@@ -20,8 +20,10 @@ interface ContentPart {
   text?: string
   toolCallId?: string
   toolName?: string
-  args?: unknown
-  result?: unknown
+  args?: unknown    // legacy AI SDK
+  input?: unknown   // AI SDK v6
+  result?: unknown  // legacy AI SDK
+  output?: unknown  // AI SDK v6
 }
 
 function contentToUIParts(content: ContentPart[]): unknown[] {
@@ -32,7 +34,7 @@ function contentToUIParts(content: ContentPart[]): unknown[] {
     if (part.type === 'text' && part.text) {
       parts.push({ type: 'text', text: part.text })
     } else if (part.type === 'tool-call' && part.toolCallId) {
-      toolCalls.set(part.toolCallId, { toolName: part.toolName!, args: part.args })
+      toolCalls.set(part.toolCallId, { toolName: part.toolName!, args: part.input ?? part.args })
     } else if (part.type === 'tool-result' && part.toolCallId) {
       const call = toolCalls.get(part.toolCallId)
       if (call) {
@@ -41,7 +43,7 @@ function contentToUIParts(content: ContentPart[]): unknown[] {
           toolCallId: part.toolCallId,
           state: 'output-available',
           input: call.args,
-          output: part.result,
+          output: part.output ?? part.result,
         })
       }
     }
