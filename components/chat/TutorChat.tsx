@@ -1,13 +1,15 @@
 'use client'
 
-import { useEffect, useRef, useState, useCallback } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { useSmartScroll } from '@/hooks/useSmartScroll'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useChat } from '@ai-sdk/react'
 import { DefaultChatTransport } from 'ai'
 import type { UIMessage } from 'ai'
 import { Send, BookOpen, LayoutList } from 'lucide-react'
-import { ChatMessage, ChatMessageSkeleton } from './ChatMessage'
+import { ChatMessage } from './ChatMessage'
+import { ThinkingIndicator } from './ThinkingIndicator'
 import { ChatContextProvider } from './ChatContext'
 
 const SUGGESTIONS = [
@@ -30,7 +32,6 @@ export function TutorChat({ conversationId, initialMessages = [], onOpenSidebar 
   const router = useRouter()
   const [input, setInput] = useState('')
   const [activeConvId, setActiveConvId] = useState(conversationId)
-  const bottomRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   // Bug #3 fix: useRef garante que o fetch sempre acessa o conversationId ATUAL,
@@ -72,9 +73,7 @@ export function TutorChat({ conversationId, initialMessages = [], onOpenSidebar 
   const isLoading = status === 'submitted' || status === 'streaming'
   const showSuggestions = messages.length === 0 && !isLoading
 
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages, isLoading])
+  const { containerRef } = useSmartScroll([messages, isLoading])
 
   // Auto-resize textarea
   useEffect(() => {
@@ -142,7 +141,7 @@ export function TutorChat({ conversationId, initialMessages = [], onOpenSidebar 
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
+      <div ref={containerRef} className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
         <AnimatePresence mode="popLayout">
           {showSuggestions && (
             <motion.div
@@ -201,8 +200,7 @@ export function TutorChat({ conversationId, initialMessages = [], onOpenSidebar 
         </AnimatePresence>
 
         {messages.map(m => <ChatMessage key={m.id} message={m} />)}
-        {isLoading && messages[messages.length - 1]?.role === 'user' && <ChatMessageSkeleton />}
-        <div ref={bottomRef} />
+        {isLoading && messages[messages.length - 1]?.role === 'user' && <ThinkingIndicator />}
       </div>
 
       {/* Input */}
