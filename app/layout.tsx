@@ -14,8 +14,21 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "CEFIS Tutor — Aprendizado com IA",
-  description: "Tutor personalizado com IA para concurseiros CEFIS",
+  title: "CEFIS Tutor IA",
+  description: "O tutor que assistiu todas as 7.447 aulas que você paga na CEFIS, leu seus certificados, e te chama pelo nome.",
+  openGraph: {
+    title: "CEFIS Tutor IA",
+    description: "O tutor que assistiu todas as 7.447 aulas que você paga na CEFIS, leu seus certificados, e te chama pelo nome.",
+    url: "https://cefis-tutor-ia.vercel.app",
+    siteName: "CEFIS Tutor IA",
+    locale: "pt_BR",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "CEFIS Tutor IA",
+    description: "O tutor que assistiu todas as 7.447 aulas que você paga na CEFIS.",
+  },
 };
 
 export default function RootLayout({

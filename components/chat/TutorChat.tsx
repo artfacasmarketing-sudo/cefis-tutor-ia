@@ -16,7 +16,16 @@ const SUGGESTIONS = [
   'Tenho 15 min e prova amanhã. Me salva.',
   'Me explica controle externo no nível fácil.',
   'Quero ouvir um podcast sobre meu maior gap no Uber.',
+  'Quais são meus maiores gaps essa semana?',
 ]
+
+function getGreeting(): string {
+  const h = new Date().getHours()
+  if (h < 6) return 'Boa madrugada'
+  if (h < 12) return 'Bom dia'
+  if (h < 18) return 'Boa tarde'
+  return 'Boa noite'
+}
 
 const T = (a: number) => `rgba(245,240,235,${a})`
 
@@ -31,6 +40,7 @@ export function TutorChat({ conversationId, initialMessages = [], onOpenSidebar 
   const router = useRouter()
   const [input, setInput] = useState('')
   const [activeConvId, setActiveConvId] = useState(conversationId)
+  const [greeting, setGreeting] = useState('Olá')
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   // Bug #3 fix: useRef garante que o fetch sempre acessa o conversationId ATUAL,
@@ -74,6 +84,9 @@ export function TutorChat({ conversationId, initialMessages = [], onOpenSidebar 
 
   const { containerRef, isAtBottom, scrollToBottom, unreadCount } = useSmartScroll([messages, isLoading], messages.length)
 
+  // Set greeting after hydration to avoid SSR mismatch
+  useEffect(() => { setGreeting(getGreeting()) }, [])
+
   // Auto-resize textarea
   useEffect(() => {
     const ta = textareaRef.current
@@ -90,6 +103,10 @@ export function TutorChat({ conversationId, initialMessages = [], onOpenSidebar 
         router.push('/chat')
         setMessages([])
         setInput('')
+      }
+      if ((e.metaKey || e.ctrlKey) && e.key === 'j') {
+        e.preventDefault()
+        textareaRef.current?.focus()
       }
     }
     window.addEventListener('keydown', handleKeyDown)
@@ -131,12 +148,20 @@ export function TutorChat({ conversationId, initialMessages = [], onOpenSidebar 
             Treinado em 7.447 aulas reais da CEFIS. Cada resposta cita a aula.
           </p>
         </div>
-        <kbd
-          className="hidden sm:inline-flex items-center gap-1 text-[10px] rounded px-1.5 py-0.5"
-          style={{ background: 'rgba(255,255,255,0.05)', color: T(0.3), border: '1px solid rgba(255,255,255,0.08)' }}
-        >
-          ⌘K Nova
-        </kbd>
+        <div className="hidden sm:flex items-center gap-2">
+          <kbd
+            className="inline-flex items-center gap-1 text-[10px] rounded px-1.5 py-0.5"
+            style={{ background: 'rgba(255,255,255,0.05)', color: T(0.3), border: '1px solid rgba(255,255,255,0.08)' }}
+          >
+            ⌘K Nova
+          </kbd>
+          <kbd
+            className="inline-flex items-center gap-1 text-[10px] rounded px-1.5 py-0.5"
+            style={{ background: 'rgba(255,255,255,0.05)', color: T(0.3), border: '1px solid rgba(255,255,255,0.08)' }}
+          >
+            ⌘J Focar
+          </kbd>
+        </div>
       </div>
 
       {/* Messages + scroll-to-bottom button */}
@@ -160,7 +185,7 @@ export function TutorChat({ conversationId, initialMessages = [], onOpenSidebar 
                   <BookOpen className="h-6 w-6" style={{ color: '#e06b49' }} />
                 </div>
                 <h2 className="text-base font-semibold" style={{ color: T(0.85) }}>
-                  Tutor CEFIS
+                  {greeting}
                 </h2>
                 <p className="text-sm mt-1.5 max-w-sm" style={{ color: T(0.4) }}>
                   Tire dúvidas, peça revisão rápida ou gere um podcast para ouvir
