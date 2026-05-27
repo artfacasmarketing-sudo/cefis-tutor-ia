@@ -73,7 +73,7 @@ export function TutorChat({ conversationId, initialMessages = [], onOpenSidebar 
   const isLoading = status === 'submitted' || status === 'streaming'
   const showSuggestions = messages.length === 0 && !isLoading
 
-  const { containerRef } = useSmartScroll([messages, isLoading])
+  const { containerRef, isAtBottom, scrollToBottom, unreadCount } = useSmartScroll([messages, isLoading], messages.length)
 
   // Auto-resize textarea
   useEffect(() => {
@@ -140,8 +140,9 @@ export function TutorChat({ conversationId, initialMessages = [], onOpenSidebar 
         </kbd>
       </div>
 
-      {/* Messages */}
-      <div ref={containerRef} className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
+      {/* Messages + scroll-to-bottom button */}
+      <div className="relative flex-1 min-h-0">
+      <div ref={containerRef} className="h-full overflow-y-auto px-4 py-4 space-y-3">
         <AnimatePresence mode="popLayout">
           {showSuggestions && (
             <motion.div
@@ -201,6 +202,22 @@ export function TutorChat({ conversationId, initialMessages = [], onOpenSidebar 
 
         {messages.map(m => <ChatMessage key={m.id} message={m} />)}
         {isLoading && messages[messages.length - 1]?.role === 'user' && <ThinkingIndicator />}
+      </div>
+      <AnimatePresence>
+        {unreadCount > 0 && !isAtBottom && (
+          <motion.button
+            initial={{ opacity: 0, scale: 0.8, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.8, y: 10 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+            onClick={scrollToBottom}
+            className="absolute bottom-4 right-6 z-10 flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium cursor-pointer"
+            style={{ background: '#e06b49', color: '#f5f0eb', boxShadow: '0 4px 16px rgba(224,107,73,0.4)' }}
+          >
+            ↓ {unreadCount} {unreadCount === 1 ? 'nova' : 'novas'}
+          </motion.button>
+        )}
+      </AnimatePresence>
       </div>
 
       {/* Input */}
