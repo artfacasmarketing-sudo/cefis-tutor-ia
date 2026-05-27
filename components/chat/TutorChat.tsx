@@ -13,10 +13,9 @@ import { ThinkingIndicator } from './ThinkingIndicator'
 import { ChatContextProvider } from './ChatContext'
 
 const SUGGESTIONS = [
-  'Explica o princípio da legalidade no Direito Administrativo',
-  'Qual a diferença entre cargo, emprego e função pública?',
-  'tenho 15 minutos, minha prova é amanhã de Contabilidade',
-  'Quero ouvir um podcast sobre Direito Administrativo',
+  'Tenho 15 min e prova amanhã. Me salva.',
+  'Me explica controle externo no nível fácil.',
+  'Quero ouvir um podcast sobre meu maior gap no Uber.',
 ]
 
 const T = (a: number) => `rgba(245,240,235,${a})`
@@ -129,7 +128,7 @@ export function TutorChat({ conversationId, initialMessages = [], onOpenSidebar 
             <LayoutList className="h-4 w-4" />
           </button>
           <p className="text-xs" style={{ color: T(0.35) }}>
-            Respostas baseadas em 18.344 transcrições CEFIS
+            Treinado em 7.447 aulas reais da CEFIS. Cada resposta cita a aula.
           </p>
         </div>
         <kbd
@@ -231,7 +230,7 @@ export function TutorChat({ conversationId, initialMessages = [], onOpenSidebar 
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Digite sua dúvida… (Enter para enviar, Shift+Enter nova linha)"
+            placeholder="Pergunta, pede um podcast, ou diz quanto tempo você tem."
             disabled={isLoading}
             rows={1}
             className="flex-1 resize-none min-h-[44px] rounded-2xl px-4 py-3 text-sm outline-none transition-all disabled:opacity-50"
